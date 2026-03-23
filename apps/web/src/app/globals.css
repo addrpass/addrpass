@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #0D9488;
+  --accent-hover: #0F766E;
+  --accent-light: rgba(13, 148, 136, 0.08);
+  --accent-glow: rgba(13, 148, 136, 0.15);
+  --coral: #F97066;
+  --coral-light: rgba(249, 112, 102, 0.1);
+  --violet: #8B5CF6;
+  --violet-light: rgba(139, 92, 246, 0.08);
+  --amber: #F59E0B;
+  --amber-light: rgba(245, 158, 11, 0.08);
+  --bg: #FAFBFC;
+  --surface: #FFFFFF;
+  --border: #E5E7EB;
+  --border-subtle: #F3F4F6;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #0D9488 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-hero {
+  background: linear-gradient(135deg, #0D9488 0%, #06B6D4 50%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Feature cards */
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.25s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(13, 148, 136, 0.1);
+  border-color: #0D9488;
+}
+
+/* Step cards */
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.step-card:hover {
+  border-color: #0D9488;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* Fade in animations */
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 0.7s ease-out forwards;
+}
+
+.fade-in-delay-1 { animation-delay: 0.1s; }
+.fade-in-delay-2 { animation-delay: 0.2s; }
+.fade-in-delay-3 { animation-delay: 0.3s; }
+.fade-in-delay-4 { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Buttons */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
+}
+
+.btn-secondary {
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  border-color: #0D9488;
+  color: #0D9488;
+}
+
+/* Glow effect for hero */
+.hero-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* Use case pills */
+.use-case-pill {
+  transition: all 0.2s ease;
+}
+
+.use-case-pill:hover {
+  transform: scale(1.03);
+}
+
+/* QR animation placeholder */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2.5s ease-in-out infinite;
+}
