@@ -1,48 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-
-function WaitlistForm() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Connect to email service
-    setSubmitted(true);
-  };
-
-  if (submitted) {
-    return (
-      <div className="text-center p-4 rounded-xl bg-teal-50 border border-teal-200">
-        <p className="text-teal-700 font-medium">
-          You&apos;re on the list! We&apos;ll notify you when AddrPass launches.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto lg:mx-0">
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@email.com"
-        className="flex-1 rounded-full border border-[#E5E7EB] bg-white px-5 py-3 text-sm outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 transition-all"
-      />
-      <button
-        type="submit"
-        className="btn-primary rounded-full px-6 py-3 text-sm font-semibold text-white whitespace-nowrap"
-      >
-        Join Waitlist
-      </button>
-    </form>
-  );
-}
 
 const features = [
   {
@@ -149,14 +108,14 @@ const steps = [
 ];
 
 const useCases = [
-  { label: "Online Shopping", emoji: "🛒" },
-  { label: "Package Delivery", emoji: "📦" },
-  { label: "Moving", emoji: "🏠" },
-  { label: "Freelancing", emoji: "💼" },
-  { label: "Healthcare", emoji: "🏥" },
-  { label: "E-Commerce API", emoji: "🔌" },
-  { label: "Real Estate", emoji: "🏗️" },
-  { label: "Personal Safety", emoji: "🛡️" },
+  { label: "Online Shopping", emoji: "\uD83D\uDED2" },
+  { label: "Package Delivery", emoji: "\uD83D\uDCE6" },
+  { label: "Moving", emoji: "\uD83C\uDFE0" },
+  { label: "Freelancing", emoji: "\uD83D\uDCBC" },
+  { label: "Healthcare", emoji: "\uD83C\uDFE5" },
+  { label: "E-Commerce API", emoji: "\uD83D\uDD0C" },
+  { label: "Real Estate", emoji: "\uD83C\uDFD7\uFE0F" },
+  { label: "Personal Safety", emoji: "\uD83D\uDEE1\uFE0F" },
 ];
 
 const stats = [
@@ -178,21 +137,41 @@ export default function Home() {
           <div className="hero-glow bg-violet-400 top-20 right-0" />
 
           <div className="text-center lg:text-left max-w-3xl relative z-10">
-            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl fade-in">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-1.5 text-sm text-teal-700 font-medium mb-6 fade-in">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+              Under active development
+            </div>
+            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl fade-in fade-in-delay-1">
               Your address,
               <br />
               <span className="gradient-text-hero">your control.</span>
             </h1>
-            <p className="mt-6 text-lg lg:text-xl text-[#6B7280] max-w-2xl fade-in fade-in-delay-1">
+            <p className="mt-6 text-lg lg:text-xl text-[#6B7280] max-w-2xl fade-in fade-in-delay-2">
               Stop copying your address into every website. Store it once, share
               tokenized links with access control, monitoring, and expiration.
               Open source and self-hostable.
             </p>
-            <div className="mt-10 fade-in fade-in-delay-2" id="waitlist">
-              <WaitlistForm />
+            <div className="mt-10 flex flex-wrap gap-4 justify-center lg:justify-start fade-in fade-in-delay-3">
+              <a
+                href="https://github.com/addrpass/addrpass"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 font-semibold text-white text-sm"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                </svg>
+                Star on GitHub
+              </a>
+              <a
+                href="#features"
+                className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-6 py-3 font-semibold text-[#111827] text-sm"
+              >
+                Learn More
+              </a>
             </div>
-            <p className="mt-4 text-xs text-[#9CA3AF] fade-in fade-in-delay-3">
-              Free and open source. No credit card required.
+            <p className="mt-4 text-xs text-[#9CA3AF] fade-in fade-in-delay-4">
+              Free and open source under AGPL-3.0
             </p>
           </div>
         </section>
@@ -294,38 +273,17 @@ export default function Home() {
               infrastructure, audit the code, or contribute. Your address data
               never has to leave your servers.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <a
-                href="https://github.com/addrpass/addrpass"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-6 py-3 font-semibold text-[#111827] text-sm"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                </svg>
-                View on GitHub
-              </a>
-              <a
-                href="#waitlist"
-                className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 font-semibold text-white text-sm"
-              >
-                Get Early Access
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="border-t border-[#E5E7EB] py-20 lg:py-28">
-          <div className="text-center max-w-xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Ready to take back <span className="gradient-text">control</span>?
-            </h2>
-            <p className="text-[#6B7280] mb-8">
-              Join the waitlist and be the first to know when AddrPass launches.
-            </p>
-            <WaitlistForm />
+            <a
+              href="https://github.com/addrpass/addrpass"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-6 py-3 font-semibold text-[#111827] text-sm"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+              </svg>
+              View on GitHub
+            </a>
           </div>
         </section>
       </main>
