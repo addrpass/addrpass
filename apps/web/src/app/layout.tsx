@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "AddrPass — Your Address, Your Control",
@@ -34,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#FAFBFC] text-[#111827] antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
