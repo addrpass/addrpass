@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://addrpass:addrpass@db:5432/addrpass?sslmode=disable"
+      JWT_SECRET: "${JWT_SECRET:-change-me-in-production}"
+      BASE_URL: "${BASE_URL:-http://localhost:8080}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: addrpass
+      POSTGRES_PASSWORD: addrpass
+      POSTGRES_DB: addrpass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U addrpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
