@@ -42,7 +42,7 @@ func (h *ShareHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusCreated, map[string]interface{}{
 		"share": share,
-		"url":   h.baseURL + "/s/" + share.Token,
+		"url":   "https://addrpass.com/resolve?t=" + share.Token,
 	})
 }
 
@@ -125,7 +125,7 @@ func (h *ShareHandler) Resolve(w http.ResponseWriter, r *http.Request) {
 
 func (h *ShareHandler) QRCode(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
-	url := h.baseURL + "/s/" + token
+	url := "https://addrpass.com/resolve?t=" + token
 
 	png, err := qrcode.Encode(url, qrcode.Medium, 512)
 	if err != nil {

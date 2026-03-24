@@ -30,6 +30,14 @@ export default function Footer() {
             >
               GitHub
             </a>
+            <a
+              href="https://github.com/addrpass/addrpass/blob/main/apps/api/openapi.yaml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#0D9488] transition-colors"
+            >
+              API Docs
+            </a>
             <span>AGPL-3.0</span>
           </div>
         </div>

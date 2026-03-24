@@ -1,0 +1,520 @@
+openapi: 3.1.0
+info:
+  title: AddrPass API
+  description: Privacy-first address management API. Store addresses, share via tokenized links and QR codes.
+  version: 0.1.0
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+  contact:
+    url: https://github.com/addrpass/addrpass
+
+servers:
+  - url: https://api.addrpass.com
+    description: Production
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+      tags: [System]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /api/v1/auth/register:
+    post:
+      summary: Create account
+      operationId: register
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                name:
+                  type: string
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "409":
+          description: Email already taken
+
+  /api/v1/auth/login:
+    post:
+      summary: Sign in
+      operationId: login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /api/v1/auth/me:
+    get:
+      summary: Get current user
+      operationId: getMe
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/v1/addresses:
+    get:
+      summary: List addresses
+      operationId: listAddresses
+      tags: [Addresses]
+      security: [{ bearer: [] }]
+      responses:
+        "200":
+          description: Address list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Address"
+    post:
+      summary: Create address
+      operationId: createAddress
+      tags: [Addresses]
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [line1, city, post_code, country]
+              properties:
+                label:
+                  type: string
+                  example: Home
+                line1:
+                  type: string
+                line2:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+                post_code:
+                  type: string
+                country:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        "201":
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+
+  /api/v1/addresses/{id}:
+    get:
+      summary: Get address
+      operationId: getAddress
+      tags: [Addresses]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Address details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+        "404":
+          description: Not found
+    put:
+      summary: Update address
+      operationId: updateAddress
+      tags: [Addresses]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                line1:
+                  type: string
+                line2:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+                post_code:
+                  type: string
+                country:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+    delete:
+      summary: Delete address
+      operationId: deleteAddress
+      tags: [Addresses]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /api/v1/shares:
+    get:
+      summary: List shares
+      operationId: listShares
+      tags: [Shares]
+      security: [{ bearer: [] }]
+      responses:
+        "200":
+          description: Share list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Share"
+    post:
+      summary: Create share
+      operationId: createShare
+      tags: [Shares]
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address_id]
+              properties:
+                address_id:
+                  type: string
+                  format: uuid
+                access_type:
+                  type: string
+                  enum: [public, authenticated]
+                  default: public
+                pin:
+                  type: string
+                  description: Optional PIN to protect the share
+                expires_at:
+                  type: string
+                  format: date-time
+                max_accesses:
+                  type: integer
+                  minimum: 1
+      responses:
+        "201":
+          description: Share created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  share:
+                    $ref: "#/components/schemas/Share"
+                  url:
+                    type: string
+                    example: https://api.addrpass.com/s/faM9_4ZyBEdv
+
+  /api/v1/shares/{id}/revoke:
+    patch:
+      summary: Revoke share
+      operationId: revokeShare
+      tags: [Shares]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Revoked
+
+  /api/v1/shares/{id}:
+    delete:
+      summary: Delete share
+      operationId: deleteShare
+      tags: [Shares]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /api/v1/shares/{id}/accesses:
+    get:
+      summary: Get access logs
+      operationId: getAccessLogs
+      tags: [Shares]
+      security: [{ bearer: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Access log list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccessLog"
+
+  /api/v1/resolve/{token}:
+    get:
+      summary: Resolve share token to address
+      operationId: resolveToken
+      tags: [Public]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pin
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    $ref: "#/components/schemas/Address"
+        "403":
+          description: PIN required or invalid
+        "404":
+          description: Token not found
+        "410":
+          description: Share expired, revoked, or max accesses reached
+
+  /api/v1/qr/{token}:
+    get:
+      summary: Get QR code for share
+      operationId: getQRCode
+      tags: [Public]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: QR code PNG image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        post_code:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Share:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        address_id:
+          type: string
+          format: uuid
+        token:
+          type: string
+        access_type:
+          type: string
+          enum: [public, authenticated]
+        pin:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        max_accesses:
+          type: integer
+          nullable: true
+        access_count:
+          type: integer
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AccessLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        share_id:
+          type: string
+          format: uuid
+        ip:
+          type: string
+        user_agent:
+          type: string
+        country:
+          type: string
+        access_at:
+          type: string
+          format: date-time
