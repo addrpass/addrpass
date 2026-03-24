@@ -1,133 +1,81 @@
 "use client";
 
+import Link from "next/link";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-/* ─── Custom SVG Illustrations ────────────────────────────── */
+/* ─── Custom Illustrations ────────────────────────────────── */
 
 function HeroIllustration() {
   return (
-    <svg viewBox="0 0 400 320" fill="none" className="w-full max-w-md">
-      {/* Address card */}
-      <rect x="60" y="40" width="280" height="160" rx="16" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1.5" />
-      <rect x="80" y="65" width="120" height="8" rx="4" fill="#CBD5E1" />
-      <rect x="80" y="83" width="180" height="6" rx="3" fill="#E2E8F0" />
-      <rect x="80" y="97" width="140" height="6" rx="3" fill="#E2E8F0" />
-      <rect x="80" y="111" width="100" height="6" rx="3" fill="#E2E8F0" />
+    <svg viewBox="0 0 400 340" fill="none" className="w-full max-w-md">
+      {/* Address card being locked */}
+      <rect x="50" y="50" width="240" height="150" rx="14" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1.5" />
+      <rect x="72" y="78" width="100" height="7" rx="3.5" fill="#CBD5E1" />
+      <rect x="72" y="94" width="160" height="5" rx="2.5" fill="#E2E8F0" />
+      <rect x="72" y="107" width="130" height="5" rx="2.5" fill="#E2E8F0" />
+      <rect x="72" y="120" width="90" height="5" rx="2.5" fill="#E2E8F0" />
+      {/* Lock badge */}
+      <rect x="72" y="145" width="52" height="26" rx="7" fill="#0F172A" />
+      <circle cx="98" cy="155" r="3.5" fill="#22D3EE" />
+      <rect x="96.5" y="157" width="3" height="5" rx="1" fill="#22D3EE" opacity="0.6" />
 
-      {/* Lock overlay */}
-      <rect x="80" y="140" width="60" height="30" rx="8" fill="#0F172A" />
-      <circle cx="110" cy="152" r="4" fill="#22D3EE" />
-      <rect x="108" y="154" width="4" height="6" rx="1" fill="#22D3EE" opacity="0.7" />
-
-      {/* Token flying out */}
+      {/* Token output */}
       <g className="float">
-        <rect x="230" y="135" width="90" height="36" rx="10" fill="white" stroke="#22D3EE" strokeWidth="1.5" />
-        <text x="248" y="158" fontSize="10" fontFamily="monospace" fontWeight="600" fill="#0F172A">aX7k...9mP</text>
+        <rect x="220" y="140" width="110" height="38" rx="10" fill="white" stroke="#22D3EE" strokeWidth="1.5" filter="url(#shadow)" />
+        <rect x="234" y="152" width="32" height="14" rx="3" fill="#22D3EE" opacity="0.1" />
+        <text x="238" y="163" fontSize="8" fontFamily="monospace" fontWeight="600" fill="#22D3EE">TOKEN</text>
+        <rect x="272" y="154" width="44" height="4" rx="2" fill="#CBD5E1" />
+        <rect x="272" y="162" width="30" height="3" rx="1.5" fill="#E2E8F0" />
       </g>
 
-      {/* Arrow from card to token */}
-      <path d="M200 155 L225 155" stroke="#22D3EE" strokeWidth="1.5" strokeDasharray="4 3" />
-      <polygon points="223,151 230,155 223,159" fill="#22D3EE" />
+      {/* Arrow */}
+      <path d="M195 160 L215 160" stroke="#22D3EE" strokeWidth="1.5" strokeDasharray="4 3" />
+      <polygon points="213,156 220,160 213,164" fill="#22D3EE" />
 
-      {/* QR code floating */}
+      {/* QR floating */}
       <g className="float float-delay-1">
-        <rect x="260" y="60" width="56" height="56" rx="8" fill="white" stroke="#A78BFA" strokeWidth="1.5" />
-        <rect x="270" y="70" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="282" y="70" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="294" y="70" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="270" y="82" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="294" y="82" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="270" y="94" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="282" y="94" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="294" y="94" width="8" height="8" rx="1" fill="#0F172A" />
-        <rect x="282" y="82" width="8" height="8" rx="1" fill="#A78BFA" opacity="0.3" />
+        <rect x="280" y="55" width="52" height="52" rx="8" fill="white" stroke="#A78BFA" strokeWidth="1.2" />
+        <g transform="translate(290,65)">
+          <rect width="7" height="7" rx="1" fill="#0F172A" />
+          <rect x="10" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect x="20" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect y="10" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect x="10" y="10" width="7" height="7" rx="1" fill="#A78BFA" opacity="0.3" />
+          <rect x="20" y="10" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect y="20" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect x="10" y="20" width="7" height="7" rx="1" fill="#0F172A" />
+          <rect x="20" y="20" width="7" height="7" rx="1" fill="#0F172A" />
+        </g>
       </g>
 
-      {/* Eye / monitoring indicator */}
+      {/* Monitoring pulse */}
       <g className="float float-delay-2">
-        <circle cx="90" cy="240" r="22" fill="white" stroke="#FB7185" strokeWidth="1.5" />
-        <path d="M78 240s5.4-7 12-7 12 7 12 7-5.4 7-12 7-12-7-12-7z" fill="none" stroke="#FB7185" strokeWidth="1.5" />
-        <circle cx="90" cy="240" r="3.5" fill="#FB7185" />
+        <circle cx="80" cy="250" r="20" fill="white" stroke="#FB7185" strokeWidth="1.2" />
+        <path d="M70 250s4.5-6 10-6 10 6 10 6-4.5 6-10 6-10-6-10-6z" fill="none" stroke="#FB7185" strokeWidth="1.2" />
+        <circle cx="80" cy="250" r="3" fill="#FB7185" />
       </g>
 
-      {/* Connection lines */}
-      <path d="M110 170 Q110 210 90 220" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3 3" />
-      <path d="M275 120 Q275 150 270 155" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3 3" />
+      {/* Notification badge */}
+      <g className="float float-delay-1">
+        <rect x="220" y="220" width="130" height="44" rx="10" fill="white" stroke="#E2E8F0" strokeWidth="1" />
+        <circle cx="240" cy="242" r="8" fill="#34D399" opacity="0.15" />
+        <path d="M236 242l3 3 5-5" stroke="#34D399" strokeWidth="1.2" strokeLinecap="round" />
+        <rect x="254" y="236" width="80" height="4" rx="2" fill="#CBD5E1" />
+        <rect x="254" y="244" width="56" height="3" rx="1.5" fill="#E2E8F0" />
+      </g>
 
-      {/* Decorative dots */}
-      <circle cx="350" cy="50" r="3" fill="#22D3EE" opacity="0.3" />
-      <circle cx="40" cy="120" r="2" fill="#A78BFA" opacity="0.3" />
-      <circle cx="370" cy="200" r="2.5" fill="#FB7185" opacity="0.3" />
-    </svg>
-  );
-}
+      {/* Dots */}
+      <circle cx="360" cy="40" r="2.5" fill="#22D3EE" opacity="0.25" />
+      <circle cx="30" cy="140" r="2" fill="#A78BFA" opacity="0.25" />
+      <circle cx="375" cy="210" r="2" fill="#FB7185" opacity="0.25" />
+      <circle cx="170" cy="280" r="1.5" fill="#34D399" opacity="0.3" />
 
-function ShieldIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <path d="M20 3L5 10v10c0 10.5 6.4 20.3 15 22.5 8.6-2.2 15-12 15-22.5V10L20 3z" fill="#0F172A" opacity="0.06" />
-      <path d="M20 6L8 12v8c0 8.4 5.12 16.24 12 18 6.88-1.76 12-9.6 12-18v-8L20 6z" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <circle cx="20" cy="18" r="3" fill="#22D3EE" />
-      <rect x="18.5" y="20" width="3" height="5" rx="1" fill="#22D3EE" opacity="0.6" />
-    </svg>
-  );
-}
-
-function TokenIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect x="4" y="10" width="32" height="20" rx="6" fill="#0F172A" opacity="0.06" />
-      <rect x="6" y="12" width="28" height="16" rx="4" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <rect x="10" y="17" width="6" height="6" rx="1.5" fill="#A78BFA" />
-      <rect x="19" y="18" width="12" height="2" rx="1" fill="#CBD5E1" />
-      <rect x="19" y="22" width="8" height="2" rx="1" fill="#E2E8F0" />
-    </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <circle cx="20" cy="20" r="16" fill="#FB7185" opacity="0.06" />
-      <path d="M8 20s5.4-9 12-9 12 9 12 9-5.4 9-12 9-12-9-12-9z" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <circle cx="20" cy="20" r="4" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <circle cx="20" cy="20" r="1.5" fill="#FB7185" />
-    </svg>
-  );
-}
-
-function RevokeIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <circle cx="20" cy="20" r="16" fill="#0F172A" opacity="0.06" />
-      <circle cx="20" cy="20" r="12" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <path d="M15 15l10 10M25 15l-10 10" stroke="#FB7185" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function APIIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect x="4" y="4" width="32" height="32" rx="8" fill="#22D3EE" opacity="0.06" />
-      <path d="M12 16l-4 4 4 4" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M28 16l4 4-4 4" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M22 12l-4 16" stroke="#22D3EE" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SelfHostIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect x="8" y="6" width="24" height="28" rx="4" fill="#0F172A" opacity="0.06" />
-      <rect x="10" y="8" width="20" height="10" rx="3" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <rect x="10" y="22" width="20" height="10" rx="3" fill="none" stroke="#0F172A" strokeWidth="1.5" />
-      <circle cx="14" cy="13" r="1.5" fill="#34D399" />
-      <circle cx="14" cy="27" r="1.5" fill="#34D399" />
-      <rect x="18" y="12" width="8" height="2" rx="1" fill="#CBD5E1" />
-      <rect x="18" y="26" width="8" height="2" rx="1" fill="#CBD5E1" />
+      <defs>
+        <filter id="shadow" x="-4" y="-2" width="120" height="48">
+          <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.06" />
+        </filter>
+      </defs>
     </svg>
   );
 }
@@ -135,109 +83,148 @@ function SelfHostIcon() {
 function PackageIllustration() {
   return (
     <svg viewBox="0 0 360 240" fill="none" className="w-full max-w-sm">
-      {/* Package box */}
-      <rect x="80" y="40" width="200" height="140" rx="8" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1.5" />
-      <line x1="80" y1="80" x2="280" y2="80" stroke="#E2E8F0" strokeWidth="1" />
-      <line x1="180" y1="40" x2="180" y2="80" stroke="#E2E8F0" strokeWidth="1" />
-
-      {/* QR on package (no address!) */}
-      <rect x="120" y="100" width="50" height="50" rx="4" fill="white" stroke="#0F172A" strokeWidth="1" />
-      <rect x="128" y="108" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="138" y="108" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="128" y="118" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="138" y="118" width="8" height="8" rx="1" fill="#22D3EE" opacity="0.4" />
-      <rect x="148" y="108" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="148" y="118" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="128" y="128" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="138" y="128" width="8" height="8" rx="1" fill="#0F172A" />
-      <rect x="148" y="128" width="8" height="8" rx="1" fill="#0F172A" />
-
-      {/* Reference code */}
-      <rect x="185" y="105" width="76" height="20" rx="4" fill="#F1F5F9" />
-      <text x="193" y="119" fontSize="9" fontFamily="monospace" fontWeight="600" fill="#0F172A">AP-7X3K-9M2P</text>
-
-      {/* Zone code */}
-      <rect x="185" y="130" width="50" height="16" rx="4" fill="#F1F5F9" />
-      <text x="192" y="142" fontSize="8" fontFamily="monospace" fill="#64748B">IST-340</text>
-
-      {/* Crossed out address */}
-      <g opacity="0.3">
-        <rect x="100" y="190" width="160" height="30" rx="4" fill="#FEE2E2" />
-        <text x="115" y="208" fontSize="9" fill="#EF4444">No plaintext address</text>
-        <line x1="110" y1="209" x2="250" y2="209" stroke="#EF4444" strokeWidth="0.5" />
+      <rect x="80" y="30" width="200" height="140" rx="8" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1.5" />
+      <line x1="80" y1="70" x2="280" y2="70" stroke="#E2E8F0" strokeWidth="1" />
+      <line x1="180" y1="30" x2="180" y2="70" stroke="#E2E8F0" strokeWidth="1" />
+      <rect x="110" y="90" width="50" height="50" rx="4" fill="white" stroke="#0F172A" strokeWidth="1" />
+      <g transform="translate(118,98)">
+        <rect width="7" height="7" rx="1" fill="#0F172A" /><rect x="9" width="7" height="7" rx="1" fill="#0F172A" /><rect x="18" width="7" height="7" rx="1" fill="#0F172A" />
+        <rect y="9" width="7" height="7" rx="1" fill="#0F172A" /><rect x="9" y="9" width="7" height="7" rx="1" fill="#22D3EE" opacity="0.35" /><rect x="18" y="9" width="7" height="7" rx="1" fill="#0F172A" />
+        <rect y="18" width="7" height="7" rx="1" fill="#0F172A" /><rect x="9" y="18" width="7" height="7" rx="1" fill="#0F172A" /><rect x="18" y="18" width="7" height="7" rx="1" fill="#0F172A" />
+      </g>
+      <rect x="178" y="95" width="76" height="18" rx="4" fill="#F1F5F9" />
+      <text x="186" y="108" fontSize="9" fontFamily="monospace" fontWeight="600" fill="#0F172A">AP-7X3K-9M2P</text>
+      <rect x="178" y="120" width="50" height="14" rx="4" fill="#F1F5F9" />
+      <text x="184" y="131" fontSize="8" fontFamily="monospace" fill="#64748B">IST-340</text>
+      <g opacity="0.25">
+        <rect x="100" y="185" width="160" height="26" rx="4" fill="#FEE2E2" />
+        <text x="130" y="202" fontSize="9" fill="#EF4444">No plaintext address</text>
       </g>
     </svg>
   );
 }
 
-/* ─── Page ────────────────────────────────────────────────── */
+/* ─── Icon Components ─────────────────────────────────────── */
+
+function VaultIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect x="4" y="8" width="28" height="22" rx="5" fill="#0F172A" opacity="0.05" />
+      <rect x="6" y="10" width="24" height="18" rx="4" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <circle cx="18" cy="18" r="4" fill="none" stroke="#22D3EE" strokeWidth="1.3" />
+      <circle cx="18" cy="18" r="1.5" fill="#22D3EE" />
+      <rect x="17" y="21" width="2" height="4" rx="1" fill="#22D3EE" opacity="0.5" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="14" fill="#A78BFA" opacity="0.06" />
+      <path d="M15 21a5.5 5.5 0 007.78.56l2.5-2.5a5.5 5.5 0 00-7.78-7.78l-1.42 1.42" stroke="#0F172A" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M21 15a5.5 5.5 0 00-7.78-.56l-2.5 2.5a5.5 5.5 0 007.78 7.78l1.42-1.42" stroke="#A78BFA" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MonitorIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="14" fill="#FB7185" opacity="0.06" />
+      <path d="M9 18s4-7 9-7 9 7 9 7-4 7-9 7-9-7-9-7z" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <circle cx="18" cy="18" r="3" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <circle cx="18" cy="18" r="1.2" fill="#FB7185" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="14" fill="#34D399" opacity="0.06" />
+      <circle cx="18" cy="18" r="10" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <polyline points="18,12 18,18 22,20" stroke="#34D399" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect x="4" y="4" width="28" height="28" rx="6" fill="#22D3EE" opacity="0.06" />
+      <path d="M13 14l-4 4 4 4" stroke="#0F172A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M23 14l4 4-4 4" stroke="#0F172A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 11l-4 14" stroke="#22D3EE" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ServerIcon() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect x="6" y="5" width="24" height="26" rx="4" fill="#0F172A" opacity="0.05" />
+      <rect x="8" y="7" width="20" height="9" rx="3" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <rect x="8" y="20" width="20" height="9" rx="3" fill="none" stroke="#0F172A" strokeWidth="1.3" />
+      <circle cx="12" cy="11.5" r="1.2" fill="#34D399" />
+      <circle cx="12" cy="24.5" r="1.2" fill="#34D399" />
+      <rect x="16" y="10.5" width="8" height="2" rx="1" fill="#CBD5E1" />
+      <rect x="16" y="23.5" width="8" height="2" rx="1" fill="#CBD5E1" />
+    </svg>
+  );
+}
+
+/* ─── Data ────────────────────────────────────────────────── */
 
 const features = [
-  { icon: <ShieldIcon />, title: "Encrypted Vault", desc: "Store multiple addresses in your private vault. Home, work, shipping — organized and secure.", accent: "cyan" },
-  { icon: <TokenIcon />, title: "Tokenized Sharing", desc: "Share via unique links, QR codes, or short codes. Recipients never see your raw data until you allow it.", accent: "lavender" },
-  { icon: <EyeIcon />, title: "Access Monitoring", desc: "See exactly who accessed your address, when, from what device. Get notified on every access.", accent: "coral" },
-  { icon: <RevokeIcon />, title: "Instant Revocation", desc: "Revoke access anytime. Set expiry dates and access limits. One-time delivery? One-time access.", accent: "coral" },
-  { icon: <APIIcon />, title: "Developer API", desc: "REST API with OAuth2 for businesses. Scoped access: full, delivery, zone, or verify-only.", accent: "cyan" },
-  { icon: <SelfHostIcon />, title: "Self-Hostable", desc: "Run on your own infrastructure with Docker. AGPL-3.0 open source. Your data never leaves your servers.", accent: "mint" },
+  { icon: <VaultIcon />, title: "Encrypted Vault", desc: "Store multiple addresses securely. Home, work, PO box — organized in one place under your control." },
+  { icon: <LinkIcon />, title: "Tokenized Sharing", desc: "Share via unique links, QR codes, or short codes. Recipients get a reference, never your raw address." },
+  { icon: <MonitorIcon />, title: "Access Monitoring", desc: "See who accessed your address, when, and from where. Know when DHL reads your data." },
+  { icon: <ClockIcon />, title: "Expiration & Limits", desc: "Set expiry dates and access limits per share. One-time delivery? One-time access. Then it dies." },
+  { icon: <CodeIcon />, title: "Developer API", desc: "REST API with OAuth2 for businesses. Scoped access levels: full, delivery, zone, or verify-only." },
+  { icon: <ServerIcon />, title: "Self-Hostable", desc: "Docker Compose, one command. Run on your own servers. AGPL-3.0 — inspect every line of code." },
 ];
 
 const steps = [
-  { num: "01", title: "Store", desc: "Add your addresses to your encrypted vault. Home, work, anything.", color: "#22D3EE" },
-  { num: "02", title: "Share", desc: "Generate a tokenized link or QR code with access rules and scope.", color: "#A78BFA" },
-  { num: "03", title: "Monitor", desc: "Track every access. See who, when, and from where. Get notified.", color: "#FB7185" },
-  { num: "04", title: "Revoke", desc: "Expire or revoke access instantly. The token dies, the address stays safe.", color: "#34D399" },
+  { num: "01", title: "Store", desc: "Add your addresses to your encrypted vault.", color: "#22D3EE" },
+  { num: "02", title: "Share", desc: "Generate a tokenized link or QR code with rules.", color: "#A78BFA" },
+  { num: "03", title: "Monitor", desc: "Track every access in real time. Get notified.", color: "#FB7185" },
+  { num: "04", title: "Revoke", desc: "Kill the token. Instantly. The address stays safe.", color: "#34D399" },
 ];
 
-const stats = [
-  { value: "3.1B+", label: "personal records leaked in 2024" },
-  { value: "53%", label: "of breaches expose home addresses" },
-  { value: "17%", label: "of identity theft from physical mail" },
-  { value: "$56B", label: "annual identity theft cost in the US" },
-];
+/* ─── Page ────────────────────────────────────────────────── */
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#FAFBFD]">
       <Header />
-
       <main className="mx-auto max-w-6xl px-6">
-        {/* ─── Hero ────────────────────────────────────────── */}
+
+        {/* ─── Hero ──────────────────────────────────────── */}
         <section className="py-20 lg:py-28 relative">
           <div className="hero-mesh" />
           <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#0F172A]/[0.03] border border-[#E2E8F0] px-4 py-1.5 text-[12px] font-medium text-[#64748B] mb-6 fade-in">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
-                Open source &middot; Self-hostable &middot; EU hosted
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] fade-in fade-in-delay-1">
-                Share your address,
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight leading-[1.1] fade-in">
+                Stop giving your address
                 <br />
-                <span className="brand-gradient">not your privacy.</span>
+                <span className="brand-gradient">to every website.</span>
               </h1>
-              <p className="mt-6 text-base lg:text-lg text-[#64748B] max-w-lg leading-relaxed fade-in fade-in-delay-2">
-                Store addresses once. Share tokenized links with access control,
-                real-time monitoring, and instant revocation. For people who care
-                where their data goes.
+              <p className="mt-6 text-base lg:text-[17px] text-[#64748B] max-w-lg leading-relaxed fade-in fade-in-delay-1">
+                AddrPass lets you store your address once and share tokenized links instead. You control who sees it, for how long, and you can revoke access instantly.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start fade-in fade-in-delay-3">
-                <a href="/register" className="btn-primary rounded-full px-7 py-3 text-sm font-semibold">
-                  <span>Start for free</span>
-                </a>
-                <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-6 py-3 text-sm font-semibold text-[#0F172A]">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
-                  View source
-                </a>
+              <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start fade-in fade-in-delay-2">
+                <Link href="/register" className="btn-primary rounded-full px-7 py-3 text-sm font-semibold">
+                  <span>Get started free</span>
+                </Link>
+                <Link href="/pricing" className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-6 py-3 text-sm font-semibold text-[#0F172A]">
+                  View pricing
+                </Link>
               </div>
-              <div className="mt-5 flex items-center gap-4 justify-center lg:justify-start fade-in fade-in-delay-4">
-                <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="#34D399"><circle cx="8" cy="8" r="8" /></svg>
-                  No credit card required
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="#34D399"><circle cx="8" cy="8" r="8" /></svg>
-                  AGPL-3.0 open source
-                </div>
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 justify-center lg:justify-start fade-in fade-in-delay-3 text-xs text-[#94A3B8]">
+                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" /> Free forever for personal use</span>
+                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" /> No credit card required</span>
+                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" /> Self-hostable</span>
               </div>
             </div>
             <div className="hidden lg:block fade-in fade-in-delay-3">
@@ -246,29 +233,34 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── Stats ───────────────────────────────────────── */}
-        <section className="brand-gradient-subtle rounded-2xl p-8 lg:p-10 -mx-2">
+        {/* ─── Social Proof Bar ──────────────────────────── */}
+        <section className="rounded-2xl bg-[#0F172A] p-8 lg:p-10 text-white -mx-2">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((s) => (
+            {[
+              { value: "3.1B+", label: "records leaked in 2024" },
+              { value: "53%", label: "of breaches expose addresses" },
+              { value: "17%", label: "of ID theft from physical mail" },
+              { value: "$56B", label: "annual ID theft cost (US)" },
+            ].map((s) => (
               <div key={s.label} className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-[#0F172A]">{s.value}</div>
-                <div className="text-xs text-[#64748B] mt-1 leading-relaxed">{s.label}</div>
+                <div className="text-2xl lg:text-3xl font-bold brand-gradient">{s.value}</div>
+                <div className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed">{s.label}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ─── How It Works ────────────────────────────────── */}
+        {/* ─── How It Works ──────────────────────────────── */}
         <section id="how-it-works" className="py-24">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">How it works</h2>
-            <p className="mt-3 text-[#64748B] max-w-md mx-auto">Four steps to take back control of your address data.</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#22D3EE] mb-3">How it works</p>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Four steps to take back control</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {steps.map((step) => (
-              <div key={step.num} className="card p-6 text-center group">
-                <div className="text-3xl font-bold mb-3" style={{ color: step.color, opacity: 0.25 }}>{step.num}</div>
-                <h3 className="font-semibold text-lg text-[#0F172A] mb-2">{step.title}</h3>
+              <div key={step.num} className="card p-6 text-center">
+                <div className="text-4xl font-black mb-4 leading-none" style={{ color: step.color, opacity: 0.18 }}>{step.num}</div>
+                <h3 className="font-semibold text-[17px] text-[#0F172A] mb-2">{step.title}</h3>
                 <p className="text-sm text-[#64748B] leading-relaxed">{step.desc}</p>
               </div>
             ))}
@@ -277,18 +269,18 @@ export default function Home() {
 
         <div className="section-divider" />
 
-        {/* ─── Features ────────────────────────────────────── */}
+        {/* ─── Features ──────────────────────────────────── */}
         <section id="features" className="py-24">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Built for privacy,<br /><span className="brand-gradient">designed for control.</span></h2>
-            <p className="mt-3 text-[#64748B] max-w-md mx-auto">Everything you need to share your address without losing ownership.</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#A78BFA] mb-3">Features</p>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Everything you need.<br /><span className="brand-gradient">Nothing you don&apos;t.</span></h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f) => (
               <div key={f.title} className="card p-6">
                 <div className="mb-4">{f.icon}</div>
                 <h3 className="font-semibold text-[15px] text-[#0F172A] mb-2">{f.title}</h3>
-                <p className="text-sm text-[#64748B] leading-relaxed">{f.desc}</p>
+                <p className="text-[13px] text-[#64748B] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -296,29 +288,26 @@ export default function Home() {
 
         <div className="section-divider" />
 
-        {/* ─── Delivery Use Case ───────────────────────────── */}
+        {/* ─── Delivery Use Case ─────────────────────────── */}
         <section id="delivery" className="py-24">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 pill text-[#64748B] mb-6">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
-                For delivery companies
-              </div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#FB7185] mb-3">For delivery companies</p>
               <h2 className="text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
-                No address on the label.
+                QR code on the label.
                 <br />
-                <span className="brand-gradient">Just a QR code.</span>
+                <span className="brand-gradient">No address printed.</span>
               </h2>
               <p className="mt-4 text-[#64748B] leading-relaxed max-w-lg">
-                Delivery companies integrate via API. The shipping label shows only a QR code and zone code &mdash; no plaintext address. Drivers scan to resolve. Customers see every access in real time.
+                Integrate via API. The shipping label shows a QR code and zone code &mdash; no plaintext address. Drivers scan to resolve. Customers see every access.
               </p>
               <div className="mt-8 space-y-3">
                 {[
-                  "E-commerce stores token, not address (reduced liability)",
+                  "E-commerce stores a token, not the address",
                   "Warehouse gets zone-only scope for sorting",
-                  "Driver gets delivery scope (address, no phone)",
-                  "Customer gets real-time access notifications",
-                  "Revoke after delivery \u2014 token dies forever",
+                  "Driver gets delivery scope (no phone number)",
+                  "Customer gets notified on every resolution",
+                  "Revoke after delivery \u2014 the token dies",
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-3">
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="mt-0.5 flex-shrink-0">
@@ -329,6 +318,11 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+              <div className="mt-8">
+                <Link href="/register" className="btn-primary rounded-full px-6 py-3 text-sm font-semibold inline-block">
+                  <span>Start integrating</span>
+                </Link>
+              </div>
             </div>
             <div className="flex justify-center">
               <PackageIllustration />
@@ -338,32 +332,39 @@ export default function Home() {
 
         <div className="section-divider" />
 
-        {/* ─── Open Source CTA ──────────────────────────────── */}
+        {/* ─── Open Source + CTA ──────────────────────────── */}
         <section className="py-24">
-          <div className="text-center max-w-2xl mx-auto">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#0F172A] flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
+          <div className="rounded-2xl brand-gradient-subtle border border-[#E2E8F0] p-10 lg:p-16 text-center">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="pill text-[#64748B] text-xs hover:border-[#CBD5E1]">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
+                Open source on GitHub
+              </a>
+              <span className="pill text-[#64748B] text-xs">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4.5v3.5c0 4.7 2.56 9.07 6 10 3.44-.93 6-5.3 6-10V4.5L8 1z" fill="#0F172A" opacity="0.15" /><path d="M5.5 8l2 2 3.5-3.5" stroke="#34D399" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                AGPL-3.0
+              </span>
+              <span className="pill text-[#64748B] text-xs hidden sm:inline-flex">
+                Built in the EU
+              </span>
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">
-              Fully <span className="brand-gradient">open source</span>
+              Ready to take back control?
             </h2>
-            <p className="text-[#64748B] leading-relaxed mb-8">
-              AddrPass is open source under AGPL-3.0. Self-host on your infrastructure, audit every line of code, or contribute.
-              Built with Go, PostgreSQL, and Next.js. Deployed with Docker.
+            <p className="text-[#64748B] max-w-md mx-auto mb-8 leading-relaxed">
+              Free for personal use. Paid plans for teams and businesses. Self-host if you want full ownership.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="btn-secondary inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-6 py-3 text-sm font-semibold text-[#0F172A]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
-                View on GitHub
-              </a>
-              <a href="/register" className="btn-primary rounded-full px-6 py-3 text-sm font-semibold">
-                <span>Start for free</span>
-              </a>
+              <Link href="/register" className="btn-primary rounded-full px-7 py-3 text-sm font-semibold">
+                <span>Get started free</span>
+              </Link>
+              <Link href="/pricing" className="btn-secondary rounded-full border border-[#E2E8F0] bg-white px-6 py-3 text-sm font-semibold text-[#0F172A]">
+                View pricing
+              </Link>
             </div>
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );

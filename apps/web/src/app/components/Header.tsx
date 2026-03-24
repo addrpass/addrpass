@@ -6,11 +6,9 @@ import { useState } from "react";
 function Logo() {
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-      {/* Shield shape with keyhole */}
       <path d="M16 2L4 8v8c0 8.4 5.12 16.24 12 18 6.88-1.76 12-9.6 12-18V8L16 2z" fill="#0F172A" />
       <path d="M16 4L6 9v7c0 7.36 4.48 14.24 10 15.8V4z" fill="#1E293B" />
       <path d="M16 4l10 5v7c0 7.36-4.48 14.24-10 15.8V4z" fill="#0F172A" />
-      {/* Keyhole / address pin */}
       <circle cx="16" cy="13" r="3" fill="#22D3EE" />
       <path d="M14 15.5L13 22h6l-1-6.5" fill="#22D3EE" opacity="0.7" />
     </svg>
@@ -32,6 +30,7 @@ export default function Header() {
           <a href="#how-it-works" className="hover:text-[#0F172A] transition-colors">How It Works</a>
           <a href="#features" className="hover:text-[#0F172A] transition-colors">Features</a>
           <a href="#delivery" className="hover:text-[#0F172A] transition-colors">For Delivery</a>
+          <Link href="/pricing" className="hover:text-[#0F172A] transition-colors">Pricing</Link>
           <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="hover:text-[#0F172A] transition-colors">GitHub</a>
         </nav>
 
@@ -40,7 +39,7 @@ export default function Header() {
             Sign in
           </Link>
           <Link href="/register" className="btn-primary rounded-full px-5 py-2 text-[13px] font-semibold">
-            <span>Get Started</span>
+            <span>Get started free</span>
           </Link>
           <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-1 text-[#64748B]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -57,6 +56,7 @@ export default function Header() {
           <a href="#how-it-works" className="block text-[#64748B]" onClick={() => setMobileOpen(false)}>How It Works</a>
           <a href="#features" className="block text-[#64748B]" onClick={() => setMobileOpen(false)}>Features</a>
           <a href="#delivery" className="block text-[#64748B]" onClick={() => setMobileOpen(false)}>For Delivery</a>
+          <Link href="/pricing" className="block text-[#64748B]" onClick={() => setMobileOpen(false)}>Pricing</Link>
           <a href="https://github.com/addrpass/addrpass" className="block text-[#64748B]">GitHub</a>
         </nav>
       )}
