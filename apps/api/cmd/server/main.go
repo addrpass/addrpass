@@ -43,11 +43,20 @@ func main() {
 	authSvc := service.NewAuthService(pool, cfg.JWTSecret)
 	addressSvc := service.NewAddressService(pool)
 	shareSvc := service.NewShareService(pool)
+	businessSvc := service.NewBusinessService(pool, cfg.JWTSecret)
+	webhookSvc := service.NewWebhookService(pool)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
 	addressH := handler.NewAddressHandler(addressSvc)
-	shareH := handler.NewShareHandler(shareSvc, cfg.BaseURL)
+	shareH := handler.NewShareHandler(shareSvc, webhookSvc, cfg.BaseURL, cfg.JWTSecret)
+	businessH := handler.NewBusinessHandler(businessSvc)
+	webhookH := handler.NewWebhookHandler(webhookSvc)
+
+	// Rate limiters
+	publicLimiter := middleware.NewRateLimiter(60, time.Minute)    // 60 req/min for public endpoints
+	authLimiter := middleware.NewRateLimiter(10, time.Minute)      // 10 req/min for login/register
+	resolveLimiter := middleware.NewRateLimiter(120, time.Minute)  // 120 req/min for token resolution
 
 	// Router
 	r := chi.NewRouter()
@@ -70,15 +79,32 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// Public routes
-	r.Post("/api/v1/auth/register", authH.Register)
-	r.Post("/api/v1/auth/login", authH.Login)
+	// Public routes (rate limited)
+	r.Group(func(r chi.Router) {
+		r.Use(authLimiter.Handler)
+		r.Post("/api/v1/auth/register", authH.Register)
+		r.Post("/api/v1/auth/login", authH.Login)
+	})
 
-	// Token resolution — public
-	r.Get("/api/v1/resolve/{token}", shareH.Resolve)
-	r.Get("/api/v1/qr/{token}", shareH.QRCode)
+	// OAuth token endpoint (rate limited)
+	r.Group(func(r chi.Router) {
+		r.Use(authLimiter.Handler)
+		r.Post("/api/v1/oauth/token", businessH.OAuthToken)
+	})
 
-	// Protected routes
+	// Token resolution — public but rate limited
+	r.Group(func(r chi.Router) {
+		r.Use(resolveLimiter.Handler)
+		r.Get("/api/v1/resolve/{token}", shareH.Resolve)
+	})
+
+	// QR code — public, cached
+	r.Group(func(r chi.Router) {
+		r.Use(publicLimiter.Handler)
+		r.Get("/api/v1/qr/{token}", shareH.QRCode)
+	})
+
+	// Protected routes (user JWT)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.JWTSecret))
 
@@ -98,6 +124,18 @@ func main() {
 		r.Patch("/api/v1/shares/{id}/revoke", shareH.Revoke)
 		r.Delete("/api/v1/shares/{id}", shareH.Delete)
 		r.Get("/api/v1/shares/{id}/accesses", shareH.AccessLogs)
+
+		// Businesses
+		r.Post("/api/v1/businesses", businessH.CreateBusiness)
+		r.Get("/api/v1/businesses", businessH.ListBusinesses)
+		r.Post("/api/v1/businesses/{businessId}/api-keys", businessH.CreateAPIKey)
+		r.Get("/api/v1/businesses/{businessId}/api-keys", businessH.ListAPIKeys)
+		r.Patch("/api/v1/api-keys/{keyId}/revoke", businessH.RevokeAPIKey)
+
+		// Webhooks
+		r.Post("/api/v1/webhooks", webhookH.Create)
+		r.Get("/api/v1/webhooks", webhookH.List)
+		r.Delete("/api/v1/webhooks/{id}", webhookH.Delete)
 	})
 
 	// Server
@@ -122,14 +160,13 @@ func main() {
 		srv.Shutdown(shutdownCtx)
 	}()
 
-	fmt.Printf("AddrPass API running on :%s\n", cfg.Port)
+	fmt.Printf("AddrPass API v2 running on :%s\n", cfg.Port)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
 
 func findMigrationsDir() string {
-	// Try common locations
 	dirs := []string{
 		"migrations",
 		"apps/api/migrations",

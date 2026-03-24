@@ -3,8 +3,10 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	qrcode "github.com/skip2/go-qrcode"
 
 	"github.com/addrpass/addrpass/apps/api/internal/middleware"
@@ -13,12 +15,14 @@ import (
 )
 
 type ShareHandler struct {
-	shares  *service.ShareService
-	baseURL string
+	shares    *service.ShareService
+	webhooks  *service.WebhookService
+	baseURL   string
+	jwtSecret string
 }
 
-func NewShareHandler(shares *service.ShareService, baseURL string) *ShareHandler {
-	return &ShareHandler{shares: shares, baseURL: baseURL}
+func NewShareHandler(shares *service.ShareService, webhooks *service.WebhookService, baseURL, jwtSecret string) *ShareHandler {
+	return &ShareHandler{shares: shares, webhooks: webhooks, baseURL: baseURL, jwtSecret: jwtSecret}
 }
 
 func (h *ShareHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +105,10 @@ func (h *ShareHandler) Resolve(w http.ResponseWriter, r *http.Request) {
 	}
 	userAgent := r.Header.Get("User-Agent")
 
-	addr, err := h.shares.Resolve(r.Context(), token, pin, ip, userAgent)
+	// Check if caller is an authenticated business
+	businessID, businessName := h.extractBusinessIdentity(r)
+
+	result, err := h.shares.Resolve(r.Context(), token, pin, ip, userAgent, businessID, businessName)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrShareNotFound):
@@ -120,7 +127,56 @@ func (h *ShareHandler) Resolve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, model.ResolveResponse{Address: *addr})
+	// Dispatch webhook asynchronously
+	if h.webhooks != nil {
+		go h.webhooks.DispatchAccessEvent(result.OwnerID, model.AccessEvent{
+			ShareID:      result.ShareID,
+			Token:        result.Token,
+			IP:           ip,
+			UserAgent:    userAgent,
+			BusinessName: businessName,
+			Scope:        string(result.Scope),
+		})
+	}
+
+	writeJSON(w, http.StatusOK, model.ResolveResponse{
+		Address: result.Address,
+		Scope:   string(result.Scope),
+	})
+}
+
+// extractBusinessIdentity checks if the request has a business Bearer token
+// and returns the business ID and name. Returns empty strings for non-business callers.
+func (h *ShareHandler) extractBusinessIdentity(r *http.Request) (string, string) {
+	header := r.Header.Get("Authorization")
+	if header == "" {
+		return "", ""
+	}
+	parts := strings.SplitN(header, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", ""
+	}
+
+	token, err := jwt.Parse(parts[1], func(t *jwt.Token) (interface{}, error) {
+		return []byte(h.jwtSecret), nil
+	})
+	if err != nil || !token.Valid {
+		return "", ""
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", ""
+	}
+
+	tokenType, _ := claims["type"].(string)
+	if tokenType != "business" {
+		return "", ""
+	}
+
+	bizID, _ := claims["sub"].(string)
+	bizName, _ := claims["business_name"].(string)
+	return bizID, bizName
 }
 
 func (h *ShareHandler) QRCode(w http.ResponseWriter, r *http.Request) {

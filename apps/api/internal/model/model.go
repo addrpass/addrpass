@@ -33,12 +33,22 @@ const (
 	ShareAccessAuthenticated ShareAccess = "authenticated"
 )
 
+type ShareScope string
+
+const (
+	ScopeFull     ShareScope = "full"
+	ScopeDelivery ShareScope = "delivery"
+	ScopeZone     ShareScope = "zone"
+	ScopeVerify   ShareScope = "verify"
+)
+
 type Share struct {
 	ID          string      `json:"id"`
 	AddressID   string      `json:"address_id"`
 	UserID      string      `json:"user_id"`
 	Token       string      `json:"token"`
 	AccessType  ShareAccess `json:"access_type"`
+	Scope       ShareScope  `json:"scope"`
 	Pin         string      `json:"pin,omitempty"`
 	ExpiresAt   *time.Time  `json:"expires_at,omitempty"`
 	MaxAccesses *int        `json:"max_accesses,omitempty"`
@@ -48,12 +58,48 @@ type Share struct {
 }
 
 type AccessLog struct {
+	ID           string    `json:"id"`
+	ShareID      string    `json:"share_id"`
+	IP           string    `json:"ip"`
+	UserAgent    string    `json:"user_agent"`
+	Country      string    `json:"country,omitempty"`
+	BusinessID   string    `json:"business_id,omitempty"`
+	BusinessName string    `json:"business_name,omitempty"`
+	AccessAt     time.Time `json:"access_at"`
+}
+
+// Business & API key types
+
+type Business struct {
 	ID        string    `json:"id"`
-	ShareID   string    `json:"share_id"`
-	IP        string    `json:"ip"`
-	UserAgent string    `json:"user_agent"`
-	Country   string    `json:"country,omitempty"`
-	AccessAt  time.Time `json:"access_at"`
+	Name      string    `json:"name"`
+	OwnerID   string    `json:"owner_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type APIKey struct {
+	ID               string    `json:"id"`
+	BusinessID       string    `json:"business_id"`
+	ClientID         string    `json:"client_id"`
+	Name             string    `json:"name"`
+	Scopes           []string  `json:"scopes"`
+	RateLimitPerHour int       `json:"rate_limit_per_hour"`
+	Active           bool      `json:"active"`
+	LastUsedAt       *time.Time `json:"last_used_at,omitempty"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+type Webhook struct {
+	ID              string     `json:"id"`
+	UserID          string     `json:"user_id"`
+	URL             string     `json:"url"`
+	Secret          string     `json:"secret,omitempty"`
+	Events          []string   `json:"events"`
+	Active          bool       `json:"active"`
+	FailureCount    int        `json:"failure_count"`
+	LastTriggeredAt *time.Time `json:"last_triggered_at,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
 }
 
 // Request/Response types
@@ -99,6 +145,7 @@ type UpdateAddressRequest struct {
 type CreateShareRequest struct {
 	AddressID   string      `json:"address_id"`
 	AccessType  ShareAccess `json:"access_type"`
+	Scope       ShareScope  `json:"scope,omitempty"`
 	Pin         string      `json:"pin,omitempty"`
 	ExpiresAt   *time.Time  `json:"expires_at,omitempty"`
 	MaxAccesses *int        `json:"max_accesses,omitempty"`
@@ -106,4 +153,56 @@ type CreateShareRequest struct {
 
 type ResolveResponse struct {
 	Address Address `json:"address"`
+	Scope   string  `json:"scope"`
+}
+
+// Business requests
+
+type CreateBusinessRequest struct {
+	Name string `json:"name"`
+}
+
+type CreateAPIKeyRequest struct {
+	Name   string   `json:"name"`
+	Scopes []string `json:"scopes,omitempty"`
+}
+
+type CreateAPIKeyResponse struct {
+	APIKey       APIKey `json:"api_key"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type OAuthTokenRequest struct {
+	GrantType    string `json:"grant_type"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type OAuthTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
+}
+
+// Webhook requests
+
+type CreateWebhookRequest struct {
+	URL    string   `json:"url"`
+	Events []string `json:"events,omitempty"`
+}
+
+type WebhookEvent struct {
+	Event     string      `json:"event"`
+	Timestamp time.Time   `json:"timestamp"`
+	Data      interface{} `json:"data"`
+}
+
+type AccessEvent struct {
+	ShareID      string `json:"share_id"`
+	Token        string `json:"token"`
+	IP           string `json:"ip"`
+	UserAgent    string `json:"user_agent"`
+	BusinessName string `json:"business_name,omitempty"`
+	Scope        string `json:"scope"`
 }

@@ -19,6 +19,7 @@ var (
 	ErrShareRevoked  = errors.New("share has been revoked")
 	ErrMaxAccesses   = errors.New("maximum accesses reached")
 	ErrInvalidPin    = errors.New("invalid pin")
+	ErrScopeExceeded = errors.New("requested scope exceeds share scope")
 )
 
 type ShareService struct {
@@ -38,14 +39,17 @@ func (s *ShareService) Create(ctx context.Context, userID string, req model.Crea
 	if req.AccessType == "" {
 		req.AccessType = model.ShareAccessPublic
 	}
+	if req.Scope == "" {
+		req.Scope = model.ScopeFull
+	}
 
 	var share model.Share
 	err = s.db.QueryRow(ctx,
-		`INSERT INTO shares (address_id, user_id, token, access_type, pin, expires_at, max_accesses)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)
-		 RETURNING id, address_id, user_id, token, access_type, pin, expires_at, max_accesses, access_count, active, created_at`,
-		req.AddressID, userID, token, req.AccessType, req.Pin, req.ExpiresAt, req.MaxAccesses,
-	).Scan(&share.ID, &share.AddressID, &share.UserID, &share.Token, &share.AccessType, &share.Pin, &share.ExpiresAt, &share.MaxAccesses, &share.AccessCount, &share.Active, &share.CreatedAt)
+		`INSERT INTO shares (address_id, user_id, token, access_type, scope, pin, expires_at, max_accesses)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		 RETURNING id, address_id, user_id, token, access_type, scope, pin, expires_at, max_accesses, access_count, active, created_at`,
+		req.AddressID, userID, token, req.AccessType, req.Scope, req.Pin, req.ExpiresAt, req.MaxAccesses,
+	).Scan(&share.ID, &share.AddressID, &share.UserID, &share.Token, &share.AccessType, &share.Scope, &share.Pin, &share.ExpiresAt, &share.MaxAccesses, &share.AccessCount, &share.Active, &share.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +58,7 @@ func (s *ShareService) Create(ctx context.Context, userID string, req model.Crea
 
 func (s *ShareService) List(ctx context.Context, userID string) ([]model.Share, error) {
 	rows, err := s.db.Query(ctx,
-		`SELECT id, address_id, user_id, token, access_type, pin, expires_at, max_accesses, access_count, active, created_at
+		`SELECT id, address_id, user_id, token, access_type, scope, pin, expires_at, max_accesses, access_count, active, created_at
 		 FROM shares WHERE user_id = $1 ORDER BY created_at DESC`,
 		userID,
 	)
@@ -66,7 +70,7 @@ func (s *ShareService) List(ctx context.Context, userID string) ([]model.Share, 
 	var shares []model.Share
 	for rows.Next() {
 		var sh model.Share
-		if err := rows.Scan(&sh.ID, &sh.AddressID, &sh.UserID, &sh.Token, &sh.AccessType, &sh.Pin, &sh.ExpiresAt, &sh.MaxAccesses, &sh.AccessCount, &sh.Active, &sh.CreatedAt); err != nil {
+		if err := rows.Scan(&sh.ID, &sh.AddressID, &sh.UserID, &sh.Token, &sh.AccessType, &sh.Scope, &sh.Pin, &sh.ExpiresAt, &sh.MaxAccesses, &sh.AccessCount, &sh.Active, &sh.CreatedAt); err != nil {
 			return nil, err
 		}
 		shares = append(shares, sh)
@@ -105,13 +109,24 @@ func (s *ShareService) Delete(ctx context.Context, userID, shareID string) error
 	return nil
 }
 
-func (s *ShareService) Resolve(ctx context.Context, token, pin, ip, userAgent string) (*model.Address, error) {
+// ResolveResult contains the resolved address, share metadata, and owner info for webhook dispatch.
+type ResolveResult struct {
+	Address  model.Address
+	ShareID  string
+	OwnerID  string
+	Scope    model.ShareScope
+	Token    string
+}
+
+// Resolve validates the share token and returns the address scoped to the share's permissions.
+// businessID and businessName are set when the caller is a business (API key auth).
+func (s *ShareService) Resolve(ctx context.Context, token, pin, ip, userAgent, businessID, businessName string) (*ResolveResult, error) {
 	var share model.Share
 	err := s.db.QueryRow(ctx,
-		`SELECT id, address_id, user_id, token, access_type, pin, expires_at, max_accesses, access_count, active
+		`SELECT id, address_id, user_id, token, access_type, scope, pin, expires_at, max_accesses, access_count, active
 		 FROM shares WHERE token = $1`,
 		token,
-	).Scan(&share.ID, &share.AddressID, &share.UserID, &share.Token, &share.AccessType, &share.Pin, &share.ExpiresAt, &share.MaxAccesses, &share.AccessCount, &share.Active)
+	).Scan(&share.ID, &share.AddressID, &share.UserID, &share.Token, &share.AccessType, &share.Scope, &share.Pin, &share.ExpiresAt, &share.MaxAccesses, &share.AccessCount, &share.Active)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrShareNotFound
@@ -132,7 +147,7 @@ func (s *ShareService) Resolve(ctx context.Context, token, pin, ip, userAgent st
 		return nil, ErrInvalidPin
 	}
 
-	// Fetch the address
+	// Fetch the full address
 	var addr model.Address
 	err = s.db.QueryRow(ctx,
 		`SELECT id, user_id, label, line1, line2, city, state, post_code, country, phone, created_at, updated_at
@@ -143,18 +158,64 @@ func (s *ShareService) Resolve(ctx context.Context, token, pin, ip, userAgent st
 		return nil, err
 	}
 
-	// Increment access count and log
+	// Apply scope — filter fields based on share scope
+	addr = applyScopeToAddress(addr, share.Scope)
+
+	// Increment access count and log (with business info if present)
 	_, _ = s.db.Exec(ctx, `UPDATE shares SET access_count = access_count + 1 WHERE id = $1`, share.ID)
 	_, _ = s.db.Exec(ctx,
-		`INSERT INTO access_logs (share_id, ip, user_agent) VALUES ($1, $2, $3)`,
-		share.ID, ip, userAgent,
+		`INSERT INTO access_logs (share_id, ip, user_agent, business_id, business_name) VALUES ($1, $2, $3, $4, $5)`,
+		share.ID, ip, userAgent, nilIfEmpty(businessID), businessName,
 	)
 
-	return &addr, nil
+	return &ResolveResult{
+		Address: addr,
+		ShareID: share.ID,
+		OwnerID: share.UserID,
+		Scope:   share.Scope,
+		Token:   share.Token,
+	}, nil
+}
+
+// applyScopeToAddress filters address fields based on scope level.
+func applyScopeToAddress(addr model.Address, scope model.ShareScope) model.Address {
+	switch scope {
+	case model.ScopeVerify:
+		// Only confirm existence — return country only
+		return model.Address{
+			ID:      addr.ID,
+			Country: addr.Country,
+		}
+	case model.ScopeZone:
+		// City + postal code + country (for sorting/routing)
+		return model.Address{
+			ID:       addr.ID,
+			City:     addr.City,
+			State:    addr.State,
+			PostCode: addr.PostCode,
+			Country:  addr.Country,
+		}
+	case model.ScopeDelivery:
+		// Full address but no phone
+		return model.Address{
+			ID:        addr.ID,
+			UserID:    addr.UserID,
+			Label:     addr.Label,
+			Line1:     addr.Line1,
+			Line2:     addr.Line2,
+			City:      addr.City,
+			State:     addr.State,
+			PostCode:  addr.PostCode,
+			Country:   addr.Country,
+			CreatedAt: addr.CreatedAt,
+			UpdatedAt: addr.UpdatedAt,
+		}
+	default: // ScopeFull
+		return addr
+	}
 }
 
 func (s *ShareService) GetAccessLogs(ctx context.Context, userID, shareID string) ([]model.AccessLog, error) {
-	// Verify ownership
 	var count int
 	err := s.db.QueryRow(ctx, `SELECT COUNT(*) FROM shares WHERE id = $1 AND user_id = $2`, shareID, userID).Scan(&count)
 	if err != nil {
@@ -165,7 +226,7 @@ func (s *ShareService) GetAccessLogs(ctx context.Context, userID, shareID string
 	}
 
 	rows, err := s.db.Query(ctx,
-		`SELECT id, share_id, ip, user_agent, country, access_at
+		`SELECT id, share_id, ip, user_agent, country, COALESCE(business_id::text, ''), COALESCE(business_name, ''), access_at
 		 FROM access_logs WHERE share_id = $1 ORDER BY access_at DESC LIMIT 100`,
 		shareID,
 	)
@@ -177,7 +238,7 @@ func (s *ShareService) GetAccessLogs(ctx context.Context, userID, shareID string
 	var logs []model.AccessLog
 	for rows.Next() {
 		var l model.AccessLog
-		if err := rows.Scan(&l.ID, &l.ShareID, &l.IP, &l.UserAgent, &l.Country, &l.AccessAt); err != nil {
+		if err := rows.Scan(&l.ID, &l.ShareID, &l.IP, &l.UserAgent, &l.Country, &l.BusinessID, &l.BusinessName, &l.AccessAt); err != nil {
 			return nil, err
 		}
 		logs = append(logs, l)
@@ -194,4 +255,11 @@ func generateToken() (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(b), nil
+}
+
+func nilIfEmpty(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
 }
