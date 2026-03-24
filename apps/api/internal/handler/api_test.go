@@ -45,6 +45,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 	}
 
 	// Clean tables before each test
+	pool.Exec(ctx, "DELETE FROM labels")
+	pool.Exec(ctx, "DELETE FROM delegations")
 	pool.Exec(ctx, "DELETE FROM webhook_deliveries")
 	pool.Exec(ctx, "DELETE FROM webhooks")
 	pool.Exec(ctx, "DELETE FROM access_logs")
@@ -59,12 +61,16 @@ func setupTestEnv(t *testing.T) *testEnv {
 	shareSvc := service.NewShareService(pool)
 	webhookSvc := service.NewWebhookService(pool)
 	businessSvc := service.NewBusinessService(pool, testJWTSecret)
+	delegationSvc := service.NewDelegationService(pool)
+	labelSvc := service.NewLabelService(pool)
 
 	authH := handler.NewAuthHandler(authSvc)
 	addressH := handler.NewAddressHandler(addressSvc)
 	shareH := handler.NewShareHandler(shareSvc, webhookSvc, testBaseURL, testJWTSecret)
 	businessH := handler.NewBusinessHandler(businessSvc)
 	webhookH := handler.NewWebhookHandler(webhookSvc)
+	delegationH := handler.NewDelegationHandler(delegationSvc)
+	labelH := handler.NewLabelHandler(labelSvc)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{AllowedOrigins: []string{"*"}}))
@@ -97,7 +103,12 @@ func setupTestEnv(t *testing.T) *testEnv {
 		r.Post("/api/v1/webhooks", webhookH.Create)
 		r.Get("/api/v1/webhooks", webhookH.List)
 		r.Delete("/api/v1/webhooks/{id}", webhookH.Delete)
+		r.Post("/api/v1/delegations", delegationH.CreateByUser)
+		r.Get("/api/v1/shares/{shareId}/delegations", delegationH.ListForShare)
+		r.Patch("/api/v1/delegations/{id}/revoke", delegationH.Revoke)
+		r.Post("/api/v1/labels", labelH.Create)
 	})
+	r.Get("/api/v1/labels/{ref}/image", labelH.GetLabelImage)
 
 	t.Cleanup(func() { pool.Close() })
 
@@ -769,5 +780,177 @@ func TestWebhookCRUD(t *testing.T) {
 	json.NewDecoder(w.Body).Decode(&webhooks)
 	if len(webhooks) != 0 {
 		t.Fatalf("expected 0 webhooks, got %d", len(webhooks))
+	}
+}
+
+// ─── Phase 3: Delegation Tests ──────────────────────────────
+
+func TestDelegationFlow(t *testing.T) {
+	env := setupTestEnv(t)
+	userToken, _ := env.registerUser(t, "owner@example.com", "password123", "Owner")
+
+	// Create address + share
+	w := env.request("POST", "/api/v1/addresses", model.CreateAddressRequest{
+		Label: "Home", Line1: "10 Delegation Rd", City: "Berlin", PostCode: "10115", Country: "DE", Phone: "+4930123",
+	}, userToken)
+	var addr model.Address
+	json.NewDecoder(w.Body).Decode(&addr)
+
+	w = env.request("POST", "/api/v1/shares", model.CreateShareRequest{
+		AddressID: addr.ID, AccessType: model.ShareAccessPublic, Scope: model.ScopeFull,
+	}, userToken)
+	var shareResp struct{ Share model.Share `json:"share"` }
+	json.NewDecoder(w.Body).Decode(&shareResp)
+
+	// Create a business to delegate to
+	w = env.request("POST", "/api/v1/businesses", model.CreateBusinessRequest{Name: "DHL Express"}, userToken)
+	var biz model.Business
+	json.NewDecoder(w.Body).Decode(&biz)
+
+	// Delegate share to business with "delivery" scope
+	w = env.request("POST", "/api/v1/delegations", model.CreateDelegationRequest{
+		ShareID: shareResp.Share.ID, ToBusinessID: biz.ID, Scope: model.ScopeDelivery, Note: "For package #1234",
+	}, userToken)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create delegation: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var delegation model.Delegation
+	json.NewDecoder(w.Body).Decode(&delegation)
+	if delegation.ToBusinessID != biz.ID {
+		t.Fatalf("expected to_business_id %s, got %s", biz.ID, delegation.ToBusinessID)
+	}
+	if string(delegation.Scope) != "delivery" {
+		t.Fatalf("expected scope delivery, got %s", delegation.Scope)
+	}
+
+	// List delegations for share
+	w = env.request("GET", "/api/v1/shares/"+shareResp.Share.ID+"/delegations", nil, userToken)
+	if w.Code != http.StatusOK {
+		t.Fatalf("list delegations: expected 200, got %d", w.Code)
+	}
+	var delegations []model.Delegation
+	json.NewDecoder(w.Body).Decode(&delegations)
+	if len(delegations) != 1 {
+		t.Fatalf("expected 1 delegation, got %d", len(delegations))
+	}
+
+	// Revoke delegation
+	w = env.request("PATCH", "/api/v1/delegations/"+delegation.ID+"/revoke", nil, userToken)
+	if w.Code != http.StatusOK {
+		t.Fatalf("revoke delegation: expected 200, got %d", w.Code)
+	}
+
+	// Verify revoked
+	w = env.request("GET", "/api/v1/shares/"+shareResp.Share.ID+"/delegations", nil, userToken)
+	json.NewDecoder(w.Body).Decode(&delegations)
+	if delegations[0].Active {
+		t.Fatal("expected delegation to be inactive")
+	}
+}
+
+func TestDelegationScopeEnforcement(t *testing.T) {
+	env := setupTestEnv(t)
+	userToken, _ := env.registerUser(t, "scope-enforce@example.com", "password123", "Enforcer")
+
+	// Create address + share with "zone" scope
+	w := env.request("POST", "/api/v1/addresses", model.CreateAddressRequest{
+		Label: "Office", Line1: "Zone St", City: "Vienna", PostCode: "1010", Country: "AT",
+	}, userToken)
+	var addr model.Address
+	json.NewDecoder(w.Body).Decode(&addr)
+
+	w = env.request("POST", "/api/v1/shares", model.CreateShareRequest{
+		AddressID: addr.ID, AccessType: model.ShareAccessPublic, Scope: model.ScopeZone,
+	}, userToken)
+	var shareResp struct{ Share model.Share `json:"share"` }
+	json.NewDecoder(w.Body).Decode(&shareResp)
+
+	// Create business
+	w = env.request("POST", "/api/v1/businesses", model.CreateBusinessRequest{Name: "Test Corp"}, userToken)
+	var biz model.Business
+	json.NewDecoder(w.Body).Decode(&biz)
+
+	// Try to delegate with "full" scope — should fail (share is only "zone")
+	w = env.request("POST", "/api/v1/delegations", model.CreateDelegationRequest{
+		ShareID: shareResp.Share.ID, ToBusinessID: biz.ID, Scope: model.ScopeFull,
+	}, userToken)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("scope upgrade: expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+
+	// Delegate with "zone" scope — should work
+	w = env.request("POST", "/api/v1/delegations", model.CreateDelegationRequest{
+		ShareID: shareResp.Share.ID, ToBusinessID: biz.ID, Scope: model.ScopeZone,
+	}, userToken)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("zone delegation: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	// Delegate with "verify" scope — should work (lower than zone)
+	w = env.request("POST", "/api/v1/delegations", model.CreateDelegationRequest{
+		ShareID: shareResp.Share.ID, ToBusinessID: biz.ID, Scope: model.ScopeVerify,
+	}, userToken)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("verify delegation: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// ─── Phase 3: Label Tests ───────────────────────────────────
+
+func TestLabelCreation(t *testing.T) {
+	env := setupTestEnv(t)
+	token, _ := env.registerUser(t, "label@example.com", "password123", "Label Test")
+
+	// Create address + share
+	w := env.request("POST", "/api/v1/addresses", model.CreateAddressRequest{
+		Label: "Home", Line1: "Label Lane 42", City: "Istanbul", PostCode: "34000", Country: "TR",
+	}, token)
+	var addr model.Address
+	json.NewDecoder(w.Body).Decode(&addr)
+
+	w = env.request("POST", "/api/v1/shares", model.CreateShareRequest{
+		AddressID: addr.ID, AccessType: model.ShareAccessPublic,
+	}, token)
+	var shareResp struct{ Share model.Share `json:"share"` }
+	json.NewDecoder(w.Body).Decode(&shareResp)
+
+	// Create label
+	w = env.request("POST", "/api/v1/labels", model.CreateLabelRequest{
+		ShareID: shareResp.Share.ID,
+	}, token)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create label: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var labelResp model.LabelResponse
+	json.NewDecoder(w.Body).Decode(&labelResp)
+
+	if labelResp.Label.ReferenceCode == "" {
+		t.Fatal("expected reference code")
+	}
+	if labelResp.Label.ZoneCode == "" {
+		t.Fatal("expected zone code")
+	}
+	// Zone code should be "TR-IST-340"
+	if labelResp.Label.ZoneCode != "TR-IST-340" {
+		t.Fatalf("expected zone code TR-IST-340, got %s", labelResp.Label.ZoneCode)
+	}
+	if labelResp.QRCodeURL == "" {
+		t.Fatal("expected QR code URL")
+	}
+
+	// Get label image
+	w = env.request("GET", "/api/v1/labels/"+labelResp.Label.ReferenceCode+"/image", nil, "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("label image: expected 200, got %d", w.Code)
+	}
+	if w.Header().Get("Content-Type") != "image/png" {
+		t.Fatalf("expected image/png, got %s", w.Header().Get("Content-Type"))
+	}
+	// Check reference and zone in headers
+	if w.Header().Get("X-Label-Reference") != labelResp.Label.ReferenceCode {
+		t.Fatalf("expected reference in header")
+	}
+	if w.Header().Get("X-Label-Zone") != "TR-IST-340" {
+		t.Fatalf("expected zone in header, got %s", w.Header().Get("X-Label-Zone"))
 	}
 }

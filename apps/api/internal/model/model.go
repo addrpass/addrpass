@@ -206,3 +206,50 @@ type AccessEvent struct {
 	BusinessName string `json:"business_name,omitempty"`
 	Scope        string `json:"scope"`
 }
+
+// Delegation types
+
+type Delegation struct {
+	ID             string     `json:"id"`
+	ShareID        string     `json:"share_id"`
+	FromBusinessID string     `json:"from_business_id,omitempty"`
+	ToBusinessID   string     `json:"to_business_id"`
+	Scope          ShareScope `json:"scope"`
+	ExpiresAt      *time.Time `json:"expires_at,omitempty"`
+	MaxAccesses    *int       `json:"max_accesses,omitempty"`
+	AccessCount    int        `json:"access_count"`
+	Active         bool       `json:"active"`
+	Note           string     `json:"note,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+}
+
+type CreateDelegationRequest struct {
+	ShareID      string     `json:"share_id"`
+	ToBusinessID string     `json:"to_business_id"`
+	Scope        ShareScope `json:"scope,omitempty"`
+	ExpiresAt    *time.Time `json:"expires_at,omitempty"`
+	MaxAccesses  *int       `json:"max_accesses,omitempty"`
+	Note         string     `json:"note,omitempty"`
+}
+
+// Label types
+
+type Label struct {
+	ID            string    `json:"id"`
+	ShareID       string    `json:"share_id"`
+	BusinessID    string    `json:"business_id,omitempty"`
+	ReferenceCode string    `json:"reference_code"`
+	ZoneCode      string    `json:"zone_code"`
+	Format        string    `json:"format"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+type CreateLabelRequest struct {
+	ShareID string `json:"share_id"`
+	Format  string `json:"format,omitempty"`
+}
+
+type LabelResponse struct {
+	Label    Label  `json:"label"`
+	QRCodeURL string `json:"qr_code_url"`
+}

@@ -45,6 +45,8 @@ func main() {
 	shareSvc := service.NewShareService(pool)
 	businessSvc := service.NewBusinessService(pool, cfg.JWTSecret)
 	webhookSvc := service.NewWebhookService(pool)
+	delegationSvc := service.NewDelegationService(pool)
+	labelSvc := service.NewLabelService(pool)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
@@ -52,6 +54,8 @@ func main() {
 	shareH := handler.NewShareHandler(shareSvc, webhookSvc, cfg.BaseURL, cfg.JWTSecret)
 	businessH := handler.NewBusinessHandler(businessSvc)
 	webhookH := handler.NewWebhookHandler(webhookSvc)
+	delegationH := handler.NewDelegationHandler(delegationSvc)
+	labelH := handler.NewLabelHandler(labelSvc)
 
 	// Rate limiters
 	publicLimiter := middleware.NewRateLimiter(60, time.Minute)    // 60 req/min for public endpoints
@@ -98,10 +102,11 @@ func main() {
 		r.Get("/api/v1/resolve/{token}", shareH.Resolve)
 	})
 
-	// QR code — public, cached
+	// QR code and labels — public, cached
 	r.Group(func(r chi.Router) {
 		r.Use(publicLimiter.Handler)
 		r.Get("/api/v1/qr/{token}", shareH.QRCode)
+		r.Get("/api/v1/labels/{ref}/image", labelH.GetLabelImage)
 	})
 
 	// Protected routes (user JWT)
@@ -136,6 +141,14 @@ func main() {
 		r.Post("/api/v1/webhooks", webhookH.Create)
 		r.Get("/api/v1/webhooks", webhookH.List)
 		r.Delete("/api/v1/webhooks/{id}", webhookH.Delete)
+
+		// Delegations
+		r.Post("/api/v1/delegations", delegationH.CreateByUser)
+		r.Get("/api/v1/shares/{shareId}/delegations", delegationH.ListForShare)
+		r.Patch("/api/v1/delegations/{id}/revoke", delegationH.Revoke)
+
+		// Labels
+		r.Post("/api/v1/labels", labelH.Create)
 	})
 
 	// Server
