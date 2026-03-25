@@ -45,7 +45,7 @@ export default function Footer() {
         <div className="section-divider mt-12 mb-6 opacity-20" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
-          <span>Built in the EU. Your data never has to leave your servers.</span>
+          <span>&copy; {new Date().getFullYear()} <a href="https://omelas.tech" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Omelas</a>. Built in the EU.</span>
           <span>Open source under AGPL-3.0</span>
         </div>
       </div>
