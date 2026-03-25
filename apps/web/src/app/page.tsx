@@ -332,6 +332,78 @@ export default function Home() {
 
         <div className="section-divider" />
 
+        {/* ─── SDK / Developers ──────────────────────────── */}
+        <section id="developers" className="py-24">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#22D3EE] mb-3">For developers</p>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Integrate in minutes,<br /><span className="brand-gradient">not months.</span></h2>
+            <p className="mt-3 text-[#64748B] max-w-md mx-auto">npm install, add a few lines, and your app supports tokenized address sharing.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5">
+            {/* Backend */}
+            <div className="card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Backend</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0F172A] text-[#94A3B8]">Node.js</span>
+              </div>
+              <pre className="bg-[#0F172A] rounded-xl p-5 text-[13px] leading-relaxed overflow-x-auto">
+                <code className="text-[#E2E8F0]">
+{`import { `}<span className="text-[#22D3EE]">AddrPassClient</span>{` } from `}<span className="text-[#34D399]">&quot;@addrpass/sdk&quot;</span>{`;
+
+const addrpass = new `}<span className="text-[#22D3EE]">AddrPassClient</span>{`({
+  clientId: `}<span className="text-[#34D399]">&quot;ap_your_id&quot;</span>{`,
+  clientSecret: `}<span className="text-[#34D399]">&quot;aps_your_secret&quot;</span>{`,
+});
+
+`}<span className="text-[#64748B]">// Resolve a customer&apos;s shared address</span>{`
+const { address } = await addrpass.`}<span className="text-[#A78BFA]">resolve</span>{`(token);
+console.log(address.line1, address.city);`}
+                </code>
+              </pre>
+            </div>
+
+            {/* Frontend */}
+            <div className="card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Frontend</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0F172A] text-[#94A3B8]">React</span>
+              </div>
+              <pre className="bg-[#0F172A] rounded-xl p-5 text-[13px] leading-relaxed overflow-x-auto">
+                <code className="text-[#E2E8F0]">
+{`import { `}<span className="text-[#22D3EE]">AddrPassProvider</span>{`, `}<span className="text-[#22D3EE]">AddrPassButton</span>{` }
+  from `}<span className="text-[#34D399]">&quot;@addrpass/sdk/react&quot;</span>{`;
+
+<`}<span className="text-[#22D3EE]">AddrPassProvider</span>{`
+  clientId=`}<span className="text-[#34D399]">&quot;ap_your_id&quot;</span>{`
+  redirectUri=`}<span className="text-[#34D399]">&quot;/callback&quot;</span>{`
+  scope=`}<span className="text-[#34D399]">&quot;delivery&quot;</span>{`>
+  <`}<span className="text-[#22D3EE]">AddrPassButton</span>{`
+    onToken={(r) => ship(r.`}<span className="text-[#A78BFA]">share_token</span>{`)} />
+</`}<span className="text-[#22D3EE]">AddrPassProvider</span>{`>`}
+                </code>
+              </pre>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <div className="bg-[#0F172A] rounded-xl px-5 py-3 inline-flex items-center gap-3">
+              <span className="text-[#64748B] text-sm font-mono">$</span>
+              <span className="text-[#E2E8F0] text-sm font-mono">npm install @addrpass/sdk</span>
+            </div>
+            <a href="https://www.npmjs.com/package/@addrpass/sdk" target="_blank" rel="noopener noreferrer" className="pill text-[#64748B] text-xs hover:border-[#CBD5E1]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#CB3837"><path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.331h-2.669zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" /></svg>
+              @addrpass/sdk
+            </a>
+            <a href="https://github.com/addrpass/addrpass/tree/main/packages/sdk-js" target="_blank" rel="noopener noreferrer" className="pill text-[#64748B] text-xs hover:border-[#CBD5E1]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
+              SDK Source
+            </a>
+          </div>
+        </section>
+
+        <div className="section-divider" />
+
         {/* ─── Open Source + CTA ──────────────────────────── */}
         <section className="py-24">
           <div className="rounded-2xl brand-gradient-subtle border border-[#E2E8F0] p-10 lg:p-16 text-center">

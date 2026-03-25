@@ -1,59 +1,142 @@
 # AddrPass
 
-Your address, your control. Share it with a token, not a copy.
+**Stop giving your address to every website.** Store it once, share tokenized links with access control, monitoring, and instant revocation.
 
-AddrPass is an open-source address management platform that replaces plaintext address sharing with tokenized, access-controlled links and QR codes. Store your addresses once, share references with full monitoring, expiration, and revocation.
+[![npm](https://img.shields.io/npm/v/@addrpass/sdk)](https://www.npmjs.com/package/@addrpass/sdk)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-## The Problem
+## What is AddrPass?
 
-Your home address is copied across dozens of services, printed on every package, and leaked in every data breach. You have zero visibility into who stores it, accesses it, or loses it.
+AddrPass is an open-source address management platform. Instead of copying your address into every website, you store it once and share **tokenized references** — links, QR codes, or short codes — with controlled access, real-time monitoring, and instant revocation.
 
-## How It Works
+**For individuals**: Protect your home address from data breaches, package theft, and unwanted exposure.
 
-1. **Store** your addresses in your encrypted vault
-2. **Share** via tokenized links, QR codes, or short codes with access control
-3. **Monitor** who accessed your address, when, and from what device
-4. **Revoke** access anytime. Update your address once, all tokens resolve to the new one.
+**For businesses**: Integrate via SDK or API. E-commerce sites store tokens instead of addresses. Delivery companies get QR codes instead of printed labels. Everyone reduces PII liability.
 
-## Use Cases
+## Quick Start
 
-- **Online shopping** -- share a token instead of typing your address into every site
-- **Package delivery** -- QR code on label instead of printed plaintext address
-- **Temporary sharing** -- expiring links for contractors, guests, one-time deliveries
-- **Business integration** -- API for e-commerce, delivery companies, healthcare, finance
-- **Address changes** -- update once, all active shares resolve to the new address
+### Use the cloud (free)
+
+1. Go to [addrpass.com/register](https://addrpass.com/register)
+2. Add your address
+3. Create a share → get a link or QR code
+4. Monitor who accesses it
+
+### Self-host (free, unlimited)
+
+```bash
+git clone https://github.com/addrpass/addrpass.git
+cd addrpass/docker
+docker compose up
+```
+
+### Integrate via SDK
+
+```bash
+npm install @addrpass/sdk
+```
+
+**Backend** (Node.js):
+```typescript
+import { AddrPassClient } from "@addrpass/sdk";
+
+const addrpass = new AddrPassClient({
+  clientId: "ap_your_id",
+  clientSecret: "aps_your_secret",
+});
+
+const { address } = await addrpass.resolve(shareToken);
+```
+
+**Frontend** (React):
+```tsx
+import { AddrPassProvider, AddrPassButton } from "@addrpass/sdk/react";
+
+<AddrPassProvider clientId="ap_xxx" redirectUri="/callback" scope="delivery">
+  <AddrPassButton onToken={(r) => ship(r.share_token)} />
+</AddrPassProvider>
+```
+
+**Vanilla JS**:
+```html
+<script src="https://api.addrpass.com/widget.js"></script>
+<script>
+  new AddrPass({
+    clientId: "ap_xxx",
+    onToken: (data) => console.log(data.share_token)
+  }).renderButton("#checkout");
+</script>
+```
+
+## Features
+
+- **Encrypted vault** — store multiple addresses securely
+- **Tokenized sharing** — links, QR codes, short codes
+- **Scoped access** — full, delivery (no phone), zone (city only), verify (exists only)
+- **Access monitoring** — who, when, from where, which business
+- **Expiration & limits** — auto-expire, max accesses, PIN protection
+- **Instant revocation** — kill the token, address stays safe
+- **Delegation chains** — user → e-commerce → delivery → driver
+- **Shipping labels** — QR + zone code, no plaintext address
+- **OAuth2** — authorization code flow for e-commerce checkout
+- **Webhooks** — HMAC-signed access notifications
+- **Rate limiting** — per-IP and per-API-key
+- **Self-hostable** — Docker Compose, one command
+
+## Architecture
+
+```
+addrpass.com (Cloudflare Workers) — Static frontend
+api.addrpass.com (Contabo VPS, Germany) — Go API + PostgreSQL
+```
+
+- **API**: Go + chi + pgx (no ORM)
+- **Frontend**: Next.js + Tailwind CSS
+- **Database**: PostgreSQL 16
+- **Auth**: JWT + bcrypt + OAuth2
+- **Deployment**: Docker + Caddy (auto-SSL)
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical deep dive.
 
 ## Project Structure
 
 ```
-addrpass/
-  apps/
-    api/          # Core API server
-    web/          # Web dashboard
-    docs/         # Documentation site
-    scanner/      # Driver/scanner mobile app
-  packages/
-    sdk-js/       # JavaScript SDK
-    sdk-python/   # Python SDK
-    shared/       # Shared types and utilities
-    qr/           # QR code generation library
-  docker/         # Docker Compose for self-hosting
+apps/
+  api/              Go API server (31 endpoints)
+  web/              Next.js frontend (landing, dashboard, auth, consent)
+packages/
+  sdk-js/           @addrpass/sdk — npm package (MIT)
+docker/
+  docker-compose.yml
 ```
 
-## Self-Hosting
+## API Reference
 
-```bash
-git clone https://github.com/addrpass/addrpass.git
-cd addrpass
-docker compose up
-```
+31 endpoints covering auth, addresses, shares, resolution, QR codes, businesses, API keys, OAuth2, webhooks, delegations, and shipping labels.
+
+Full spec: [openapi.yaml](apps/api/openapi.yaml)
+
+## SDK
+
+| Package | Install | Docs |
+|---------|---------|------|
+| **@addrpass/sdk** | `npm install @addrpass/sdk` | [README](packages/sdk-js/README.md) |
+
+The SDK provides:
+- `AddrPassClient` — backend client with full API coverage
+- `<AddrPassProvider>` + `<AddrPassButton>` — React components
+- `useAddrPass()` — React hook for custom UI
+- Vanilla JS widget via `widget.js`
 
 ## License
 
-- Core (API, web app, shared): [AGPL-3.0](LICENSE)
-- SDKs and client libraries: [MIT](packages/sdk-js/LICENSE)
+- **Core** (API, web app): [AGPL-3.0](LICENSE) — open source, copyleft
+- **SDK** (npm package): [MIT](packages/sdk-js/README.md) — use freely in any project
 
 ## Links
 
-- Website: [addrpass.com](https://addrpass.com)
-- Documentation: [docs.addrpass.com](https://docs.addrpass.com)
+- **Website**: [addrpass.com](https://addrpass.com)
+- **API**: [api.addrpass.com](https://api.addrpass.com/health)
+- **npm**: [@addrpass/sdk](https://www.npmjs.com/package/@addrpass/sdk)
+- **Architecture**: [ARCHITECTURE.md](ARCHITECTURE.md)
+- **Research**: [RESEARCH.md](RESEARCH.md)

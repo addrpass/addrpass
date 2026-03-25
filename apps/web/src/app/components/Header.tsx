@@ -30,8 +30,8 @@ export default function Header() {
           <a href="#how-it-works" className="hover:text-[#0F172A] transition-colors">How It Works</a>
           <a href="#features" className="hover:text-[#0F172A] transition-colors">Features</a>
           <a href="#delivery" className="hover:text-[#0F172A] transition-colors">For Delivery</a>
+          <a href="#developers" className="hover:text-[#0F172A] transition-colors">Developers</a>
           <Link href="/pricing" className="hover:text-[#0F172A] transition-colors">Pricing</Link>
-          <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="hover:text-[#0F172A] transition-colors">GitHub</a>
         </nav>
 
         <div className="flex items-center gap-3">

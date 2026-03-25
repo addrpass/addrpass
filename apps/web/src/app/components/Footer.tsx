@@ -34,10 +34,10 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-4">Developers</h4>
             <div className="space-y-2.5 text-sm text-[#94A3B8]">
+              <a href="https://www.npmjs.com/package/@addrpass/sdk" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">npm SDK</a>
               <a href="https://github.com/addrpass/addrpass" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">GitHub</a>
-              <a href="https://github.com/addrpass/addrpass/blob/main/apps/api/openapi.yaml" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">API Docs</a>
+              <a href="https://github.com/addrpass/addrpass/blob/main/apps/api/openapi.yaml" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">API Reference</a>
               <a href="https://github.com/addrpass/addrpass/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">Architecture</a>
-              <a href="https://github.com/addrpass/addrpass/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">AGPL-3.0</a>
             </div>
           </div>
         </div>
