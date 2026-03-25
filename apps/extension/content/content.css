@@ -1,0 +1,115 @@
+/* AddrPass Badge — floating indicator near address forms */
+#addrpass-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #0F172A;
+  color: #E2E8F0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(34, 211, 238, 0.15);
+  transition: all 0.2s ease;
+  animation: addrpass-slide-in 0.3s ease-out;
+}
+
+#addrpass-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+@keyframes addrpass-slide-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* AddrPass Picker — address selection dropdown */
+#addrpass-picker {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  width: 280px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  animation: addrpass-slide-in 0.2s ease-out;
+  overflow: hidden;
+}
+
+.addrpass-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.addrpass-picker-header button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.addrpass-picker-header button:hover {
+  color: #0F172A;
+}
+
+.addrpass-picker-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.addrpass-picker-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.addrpass-picker-item:last-child {
+  border-bottom: none;
+}
+
+.addrpass-picker-item:hover {
+  background: #F8FAFC;
+}
+
+.addrpass-picker-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #22D3EE;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.addrpass-picker-line {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0F172A;
+}
+
+.addrpass-picker-detail {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 1px;
+}
