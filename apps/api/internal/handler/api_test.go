@@ -45,6 +45,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 	}
 
 	// Clean tables before each test
+	pool.Exec(ctx, "DELETE FROM authorization_codes")
+	pool.Exec(ctx, "DELETE FROM oauth_apps")
 	pool.Exec(ctx, "DELETE FROM labels")
 	pool.Exec(ctx, "DELETE FROM delegations")
 	pool.Exec(ctx, "DELETE FROM webhook_deliveries")
@@ -63,6 +65,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 	businessSvc := service.NewBusinessService(pool, testJWTSecret)
 	delegationSvc := service.NewDelegationService(pool)
 	labelSvc := service.NewLabelService(pool)
+	oauthSvc := service.NewOAuthService(pool, testJWTSecret)
 
 	authH := handler.NewAuthHandler(authSvc)
 	addressH := handler.NewAddressHandler(addressSvc)
@@ -71,6 +74,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 	webhookH := handler.NewWebhookHandler(webhookSvc)
 	delegationH := handler.NewDelegationHandler(delegationSvc)
 	labelH := handler.NewLabelHandler(labelSvc)
+	oauthH := handler.NewOAuthHandler(oauthSvc, addressSvc)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{AllowedOrigins: []string{"*"}}))
@@ -107,8 +111,12 @@ func setupTestEnv(t *testing.T) *testEnv {
 		r.Get("/api/v1/shares/{shareId}/delegations", delegationH.ListForShare)
 		r.Patch("/api/v1/delegations/{id}/revoke", delegationH.Revoke)
 		r.Post("/api/v1/labels", labelH.Create)
+		r.Post("/api/v1/businesses/{businessId}/oauth-apps", oauthH.CreateApp)
+		r.Get("/api/v1/oauth/authorize", oauthH.Authorize)
+		r.Post("/api/v1/oauth/consent", oauthH.Consent)
 	})
 	r.Get("/api/v1/labels/{ref}/image", labelH.GetLabelImage)
+	r.Post("/api/v1/oauth/exchange", oauthH.Exchange)
 
 	t.Cleanup(func() { pool.Close() })
 
@@ -952,5 +960,177 @@ func TestLabelCreation(t *testing.T) {
 	}
 	if w.Header().Get("X-Label-Zone") != "TR-IST-340" {
 		t.Fatalf("expected zone in header, got %s", w.Header().Get("X-Label-Zone"))
+	}
+}
+
+// ─── Phase 2.5: OAuth Authorization Code Flow Tests ─────────
+
+func TestOAuthAuthorizationCodeFlow(t *testing.T) {
+	env := setupTestEnv(t)
+	userToken, _ := env.registerUser(t, "oauth-user@example.com", "password123", "OAuth User")
+
+	// Create address
+	w := env.request("POST", "/api/v1/addresses", model.CreateAddressRequest{
+		Label: "Home", Line1: "1 OAuth St", City: "Amsterdam", PostCode: "1012", Country: "NL", Phone: "+31123",
+	}, userToken)
+	var addr model.Address
+	json.NewDecoder(w.Body).Decode(&addr)
+
+	// Create business
+	w = env.request("POST", "/api/v1/businesses", model.CreateBusinessRequest{Name: "ShopMart"}, userToken)
+	var biz model.Business
+	json.NewDecoder(w.Body).Decode(&biz)
+
+	// Create OAuth app
+	w = env.request("POST", "/api/v1/businesses/"+biz.ID+"/oauth-apps", model.CreateOAuthAppRequest{
+		Name:         "ShopMart Checkout",
+		RedirectURIs: []string{"https://shopmart.com/callback"},
+	}, userToken)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create oauth app: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var appResp model.CreateOAuthAppResponse
+	json.NewDecoder(w.Body).Decode(&appResp)
+	if appResp.ClientSecret == "" {
+		t.Fatal("expected client_secret")
+	}
+
+	// Step 1: Get authorize data (consent screen info)
+	w = env.request("GET", "/api/v1/oauth/authorize?client_id="+appResp.App.ClientID+"&redirect_uri=https://shopmart.com/callback&scope=delivery&state=xyz123", nil, userToken)
+	if w.Code != http.StatusOK {
+		t.Fatalf("authorize: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var consentData model.ConsentPageData
+	json.NewDecoder(w.Body).Decode(&consentData)
+	if consentData.App.Name != "ShopMart Checkout" {
+		t.Fatalf("expected app name, got %s", consentData.App.Name)
+	}
+	if len(consentData.Addresses) != 1 {
+		t.Fatalf("expected 1 address, got %d", len(consentData.Addresses))
+	}
+
+	// Step 2: User consents
+	w = env.request("POST", "/api/v1/oauth/consent", model.ConsentRequest{
+		ClientID:    appResp.App.ClientID,
+		RedirectURI: "https://shopmart.com/callback",
+		Scope:       "delivery",
+		State:       "xyz123",
+		AddressID:   addr.ID,
+	}, userToken)
+	if w.Code != http.StatusOK {
+		t.Fatalf("consent: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var consentResp struct {
+		RedirectURL string `json:"redirect_url"`
+		Code        string `json:"code"`
+	}
+	json.NewDecoder(w.Body).Decode(&consentResp)
+	if consentResp.Code == "" {
+		t.Fatal("expected authorization code")
+	}
+
+	// Step 3: Exchange code for token
+	w = env.request("POST", "/api/v1/oauth/exchange", model.TokenExchangeRequest{
+		GrantType:    "authorization_code",
+		Code:         consentResp.Code,
+		ClientID:     appResp.App.ClientID,
+		ClientSecret: appResp.ClientSecret,
+		RedirectURI:  "https://shopmart.com/callback",
+	}, "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("exchange: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var tokenResp model.TokenExchangeResponse
+	json.NewDecoder(w.Body).Decode(&tokenResp)
+	if tokenResp.AccessToken == "" {
+		t.Fatal("expected access_token")
+	}
+	if tokenResp.ShareToken == "" {
+		t.Fatal("expected share_token")
+	}
+	if tokenResp.Scope != "delivery" {
+		t.Fatalf("expected scope delivery, got %s", tokenResp.Scope)
+	}
+
+	// Step 4: Resolve the share token (business uses it to get the address)
+	w = env.request("GET", "/api/v1/resolve/"+tokenResp.ShareToken, nil, "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("resolve: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var resolveResp model.ResolveResponse
+	json.NewDecoder(w.Body).Decode(&resolveResp)
+	if resolveResp.Address.Line1 != "1 OAuth St" {
+		t.Fatalf("expected '1 OAuth St', got '%s'", resolveResp.Address.Line1)
+	}
+	// Delivery scope: no phone
+	if resolveResp.Address.Phone != "" {
+		t.Fatalf("delivery scope should not include phone, got '%s'", resolveResp.Address.Phone)
+	}
+}
+
+func TestOAuthInvalidRedirectURI(t *testing.T) {
+	env := setupTestEnv(t)
+	userToken, _ := env.registerUser(t, "oauth-bad@example.com", "password123", "Bad OAuth")
+
+	w := env.request("POST", "/api/v1/businesses", model.CreateBusinessRequest{Name: "BadApp"}, userToken)
+	var biz model.Business
+	json.NewDecoder(w.Body).Decode(&biz)
+
+	w = env.request("POST", "/api/v1/businesses/"+biz.ID+"/oauth-apps", model.CreateOAuthAppRequest{
+		Name: "BadApp", RedirectURIs: []string{"https://good.com/callback"},
+	}, userToken)
+	var appResp model.CreateOAuthAppResponse
+	json.NewDecoder(w.Body).Decode(&appResp)
+
+	// Try authorize with wrong redirect URI
+	w = env.request("GET", "/api/v1/oauth/authorize?client_id="+appResp.App.ClientID+"&redirect_uri=https://evil.com/steal&scope=full", nil, userToken)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("bad redirect: expected 400, got %d", w.Code)
+	}
+}
+
+func TestOAuthCodeReuse(t *testing.T) {
+	env := setupTestEnv(t)
+	userToken, _ := env.registerUser(t, "oauth-reuse@example.com", "password123", "Reuse")
+
+	w := env.request("POST", "/api/v1/addresses", model.CreateAddressRequest{
+		Label: "Home", Line1: "Reuse St", City: "Rome", PostCode: "00100", Country: "IT",
+	}, userToken)
+	var addr model.Address
+	json.NewDecoder(w.Body).Decode(&addr)
+
+	w = env.request("POST", "/api/v1/businesses", model.CreateBusinessRequest{Name: "ReuseApp"}, userToken)
+	var biz model.Business
+	json.NewDecoder(w.Body).Decode(&biz)
+
+	w = env.request("POST", "/api/v1/businesses/"+biz.ID+"/oauth-apps", model.CreateOAuthAppRequest{
+		Name: "ReuseApp", RedirectURIs: []string{"https://reuse.com/cb"},
+	}, userToken)
+	var appResp model.CreateOAuthAppResponse
+	json.NewDecoder(w.Body).Decode(&appResp)
+
+	// Get code
+	w = env.request("POST", "/api/v1/oauth/consent", model.ConsentRequest{
+		ClientID: appResp.App.ClientID, RedirectURI: "https://reuse.com/cb", Scope: "full", AddressID: addr.ID,
+	}, userToken)
+	var consentResp struct{ Code string `json:"code"` }
+	json.NewDecoder(w.Body).Decode(&consentResp)
+
+	// First exchange — OK
+	w = env.request("POST", "/api/v1/oauth/exchange", model.TokenExchangeRequest{
+		GrantType: "authorization_code", Code: consentResp.Code,
+		ClientID: appResp.App.ClientID, ClientSecret: appResp.ClientSecret, RedirectURI: "https://reuse.com/cb",
+	}, "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("first exchange: expected 200, got %d", w.Code)
+	}
+
+	// Second exchange — should fail (code already used)
+	w = env.request("POST", "/api/v1/oauth/exchange", model.TokenExchangeRequest{
+		GrantType: "authorization_code", Code: consentResp.Code,
+		ClientID: appResp.App.ClientID, ClientSecret: appResp.ClientSecret, RedirectURI: "https://reuse.com/cb",
+	}, "")
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("code reuse: expected 400, got %d", w.Code)
 	}
 }

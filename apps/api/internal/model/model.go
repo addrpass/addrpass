@@ -253,3 +253,79 @@ type LabelResponse struct {
 	Label    Label  `json:"label"`
 	QRCodeURL string `json:"qr_code_url"`
 }
+
+// OAuth2 types
+
+type OAuthApp struct {
+	ID           string   `json:"id"`
+	BusinessID   string   `json:"business_id"`
+	Name         string   `json:"name"`
+	LogoURL      string   `json:"logo_url,omitempty"`
+	RedirectURIs []string `json:"redirect_uris"`
+	ClientID     string   `json:"client_id"`
+	Active       bool     `json:"active"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type CreateOAuthAppRequest struct {
+	Name         string   `json:"name"`
+	LogoURL      string   `json:"logo_url,omitempty"`
+	RedirectURIs []string `json:"redirect_uris"`
+}
+
+type CreateOAuthAppResponse struct {
+	App          OAuthApp `json:"app"`
+	ClientSecret string   `json:"client_secret"`
+}
+
+type AuthorizationCode struct {
+	ID          string     `json:"id"`
+	Code        string     `json:"code"`
+	BusinessID  string     `json:"business_id"`
+	UserID      string     `json:"user_id"`
+	AddressID   string     `json:"address_id"`
+	Scope       ShareScope `json:"scope"`
+	RedirectURI string     `json:"redirect_uri"`
+	State       string     `json:"state"`
+	ExpiresAt   time.Time  `json:"expires_at"`
+	Used        bool       `json:"used"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
+type AuthorizeRequest struct {
+	ClientID    string `json:"client_id"`
+	RedirectURI string `json:"redirect_uri"`
+	Scope       string `json:"scope"`
+	State       string `json:"state"`
+}
+
+type ConsentRequest struct {
+	ClientID    string `json:"client_id"`
+	RedirectURI string `json:"redirect_uri"`
+	Scope       string `json:"scope"`
+	State       string `json:"state"`
+	AddressID   string `json:"address_id"`
+}
+
+type TokenExchangeRequest struct {
+	GrantType    string `json:"grant_type"`
+	Code         string `json:"code"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	RedirectURI  string `json:"redirect_uri"`
+}
+
+type TokenExchangeResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
+	ShareToken  string `json:"share_token"`
+}
+
+type ConsentPageData struct {
+	App       OAuthApp  `json:"app"`
+	Addresses []Address `json:"addresses"`
+	Scope     string    `json:"scope"`
+	State     string    `json:"state"`
+}

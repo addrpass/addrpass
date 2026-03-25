@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -47,6 +50,7 @@ func main() {
 	webhookSvc := service.NewWebhookService(pool)
 	delegationSvc := service.NewDelegationService(pool)
 	labelSvc := service.NewLabelService(pool)
+	oauthSvc := service.NewOAuthService(pool, cfg.JWTSecret)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
@@ -56,6 +60,7 @@ func main() {
 	webhookH := handler.NewWebhookHandler(webhookSvc)
 	delegationH := handler.NewDelegationHandler(delegationSvc)
 	labelH := handler.NewLabelHandler(labelSvc)
+	oauthH := handler.NewOAuthHandler(oauthSvc, addressSvc)
 
 	// Rate limiters
 	publicLimiter := middleware.NewRateLimiter(60, time.Minute)    // 60 req/min for public endpoints
@@ -90,10 +95,25 @@ func main() {
 		r.Post("/api/v1/auth/login", authH.Login)
 	})
 
-	// OAuth token endpoint (rate limited)
+	// OAuth endpoints (rate limited)
 	r.Group(func(r chi.Router) {
 		r.Use(authLimiter.Handler)
-		r.Post("/api/v1/oauth/token", businessH.OAuthToken)
+		r.Post("/api/v1/oauth/token", func(w http.ResponseWriter, r *http.Request) {
+			// Peek at grant_type to route to correct handler
+			// We need to handle both client_credentials and authorization_code
+			// Read body, check grant_type, then dispatch
+			var peek struct{ GrantType string `json:"grant_type"` }
+			body, _ := io.ReadAll(r.Body)
+			r.Body.Close()
+			json.Unmarshal(body, &peek)
+			r.Body = io.NopCloser(bytes.NewReader(body))
+
+			if peek.GrantType == "authorization_code" {
+				oauthH.Exchange(w, r)
+			} else {
+				businessH.OAuthToken(w, r)
+			}
+		})
 	})
 
 	// Token resolution — public but rate limited
@@ -149,6 +169,21 @@ func main() {
 
 		// Labels
 		r.Post("/api/v1/labels", labelH.Create)
+
+		// OAuth apps
+		r.Post("/api/v1/businesses/{businessId}/oauth-apps", oauthH.CreateApp)
+
+		// OAuth consent flow (user must be logged in)
+		r.Get("/api/v1/oauth/authorize", oauthH.Authorize)
+		r.Post("/api/v1/oauth/consent", oauthH.Consent)
+	})
+
+	// Embeddable widget JS (public, cached)
+	r.Get("/widget.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Header().Set("Cache-Control", "public, max-age=3600")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Write([]byte(widgetJS))
 	})
 
 	// Server
@@ -192,3 +227,56 @@ func findMigrationsDir() string {
 	}
 	return "migrations"
 }
+
+// Embeddable checkout widget JavaScript
+const widgetJS = `(function(){
+  "use strict";
+  var API="https://api.addrpass.com";
+  var APP="https://addrpass.com";
+
+  function AddrPass(opts){
+    this.clientId=opts.clientId||"";
+    this.redirectUri=opts.redirectUri||window.location.origin+"/addrpass/callback";
+    this.scope=opts.scope||"delivery";
+    this.onToken=opts.onToken||function(){};
+    this.onError=opts.onError||function(){};
+  }
+
+  AddrPass.prototype.authorize=function(){
+    var state=Math.random().toString(36).substr(2,12);
+    var url=APP+"/authorize?client_id="+encodeURIComponent(this.clientId)
+      +"&redirect_uri="+encodeURIComponent(this.redirectUri)
+      +"&scope="+encodeURIComponent(this.scope)
+      +"&state="+state;
+
+    var w=600,h=700;
+    var left=(screen.width-w)/2;
+    var top=(screen.height-h)/2;
+    var popup=window.open(url,"addrpass_consent","width="+w+",height="+h+",left="+left+",top="+top);
+
+    var self=this;
+    window.addEventListener("message",function handler(e){
+      if(e.origin!==APP)return;
+      window.removeEventListener("message",handler);
+      if(popup)popup.close();
+      if(e.data.error){self.onError(e.data.error);return;}
+      self.onToken(e.data);
+    });
+  };
+
+  AddrPass.prototype.renderButton=function(container){
+    var el=typeof container==="string"?document.querySelector(container):container;
+    if(!el)return;
+    var btn=document.createElement("button");
+    btn.type="button";
+    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-right:6px"><path d="M16 2L4 8v8c0 8.4 5.12 16.24 12 18 6.88-1.76 12-9.6 12-18V8L16 2z" fill="#0F172A"/><circle cx="16" cy="13" r="3" fill="#22D3EE"/><path d="M14 15.5L13 22h6l-1-6.5" fill="#22D3EE" opacity="0.7"/></svg><span>Share via AddrPass</span>';
+    btn.style.cssText="display:inline-flex;align-items:center;padding:10px 20px;border-radius:8px;border:1px solid #E2E8F0;background:#fff;color:#0F172A;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s";
+    btn.onmouseover=function(){btn.style.borderColor="#22D3EE";btn.style.boxShadow="0 2px 8px rgba(34,211,238,0.15)"};
+    btn.onmouseout=function(){btn.style.borderColor="#E2E8F0";btn.style.boxShadow="none"};
+    var self=this;
+    btn.onclick=function(){self.authorize()};
+    el.appendChild(btn);
+  };
+
+  window.AddrPass=AddrPass;
+})();`
