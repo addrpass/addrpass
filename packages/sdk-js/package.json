@@ -1,0 +1,57 @@
+{
+  "name": "@addrpass/sdk",
+  "version": "0.1.0",
+  "description": "AddrPass SDK — tokenized address sharing for JavaScript and TypeScript",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/addrpass/addrpass",
+    "directory": "packages/sdk-js"
+  },
+  "homepage": "https://addrpass.com",
+  "keywords": [
+    "address",
+    "privacy",
+    "tokenization",
+    "qr-code",
+    "delivery",
+    "oauth2",
+    "addrpass"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}
