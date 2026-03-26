@@ -46,7 +46,10 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
           <span>&copy; {new Date().getFullYear()} <a href="https://omelas.tech" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Omelas</a>. Built in the EU.</span>
-          <span>Open source under AGPL-3.0</span>
+          <span className="flex items-center gap-3">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span>Open source under AGPL-3.0</span>
+          </span>
         </div>
       </div>
     </footer>

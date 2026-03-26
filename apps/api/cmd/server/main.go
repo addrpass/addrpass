@@ -51,16 +51,18 @@ func main() {
 	delegationSvc := service.NewDelegationService(pool)
 	labelSvc := service.NewLabelService(pool)
 	oauthSvc := service.NewOAuthService(pool, cfg.JWTSecret)
+	billingSvc := service.NewBillingService(pool)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
 	addressH := handler.NewAddressHandler(addressSvc)
-	shareH := handler.NewShareHandler(shareSvc, webhookSvc, cfg.BaseURL, cfg.JWTSecret)
+	shareH := handler.NewShareHandler(shareSvc, webhookSvc, billingSvc, cfg.BaseURL, cfg.JWTSecret)
 	businessH := handler.NewBusinessHandler(businessSvc)
 	webhookH := handler.NewWebhookHandler(webhookSvc)
 	delegationH := handler.NewDelegationHandler(delegationSvc)
 	labelH := handler.NewLabelHandler(labelSvc)
 	oauthH := handler.NewOAuthHandler(oauthSvc, addressSvc)
+	billingH := handler.NewBillingHandler(billingSvc)
 
 	// Rate limiters
 	publicLimiter := middleware.NewRateLimiter(60, time.Minute)    // 60 req/min for public endpoints
@@ -87,6 +89,9 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	// Public plan info
+	r.Get("/api/v1/plans", billingH.GetPlanLimits)
 
 	// Public routes (rate limited)
 	r.Group(func(r chi.Router) {
@@ -169,6 +174,9 @@ func main() {
 
 		// Labels
 		r.Post("/api/v1/labels", labelH.Create)
+
+		// Billing & Usage
+		r.Get("/api/v1/billing/usage", billingH.GetUsage)
 
 		// OAuth apps
 		r.Post("/api/v1/businesses/{businessId}/oauth-apps", oauthH.CreateApp)

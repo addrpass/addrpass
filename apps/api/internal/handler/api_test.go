@@ -69,7 +69,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 
 	authH := handler.NewAuthHandler(authSvc)
 	addressH := handler.NewAddressHandler(addressSvc)
-	shareH := handler.NewShareHandler(shareSvc, webhookSvc, testBaseURL, testJWTSecret)
+	billingSvc := service.NewBillingService(pool)
+	shareH := handler.NewShareHandler(shareSvc, webhookSvc, billingSvc, testBaseURL, testJWTSecret)
 	businessH := handler.NewBusinessHandler(businessSvc)
 	webhookH := handler.NewWebhookHandler(webhookSvc)
 	delegationH := handler.NewDelegationHandler(delegationSvc)

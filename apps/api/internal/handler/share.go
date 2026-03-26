@@ -17,12 +17,13 @@ import (
 type ShareHandler struct {
 	shares    *service.ShareService
 	webhooks  *service.WebhookService
+	billing   *service.BillingService
 	baseURL   string
 	jwtSecret string
 }
 
-func NewShareHandler(shares *service.ShareService, webhooks *service.WebhookService, baseURL, jwtSecret string) *ShareHandler {
-	return &ShareHandler{shares: shares, webhooks: webhooks, baseURL: baseURL, jwtSecret: jwtSecret}
+func NewShareHandler(shares *service.ShareService, webhooks *service.WebhookService, billing *service.BillingService, baseURL, jwtSecret string) *ShareHandler {
+	return &ShareHandler{shares: shares, webhooks: webhooks, billing: billing, baseURL: baseURL, jwtSecret: jwtSecret}
 }
 
 func (h *ShareHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -125,6 +126,15 @@ func (h *ShareHandler) Resolve(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "failed to resolve share")
 		}
 		return
+	}
+
+	// Track usage and enforce limits
+	if h.billing != nil {
+		_, allowed, _ := h.billing.IncrementResolutions(r.Context(), result.OwnerID)
+		if !allowed {
+			writeError(w, http.StatusPaymentRequired, "resolution limit reached — upgrade your plan at addrpass.com/pricing")
+			return
+		}
 	}
 
 	// Dispatch webhook asynchronously
