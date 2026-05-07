@@ -234,31 +234,34 @@ export default function Home() {
         </section>
 
         {/* ─── Social Proof Bar ──────────────────────────── */}
-        <section className="rounded-2xl bg-[#0F172A] p-8 lg:p-10 text-white -mx-2">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { value: "1.7B+", label: "records compromised in 2024", source: "ITRC 2024 Annual Data Breach Report", href: "https://www.idtheftcenter.org/post/2024-annual-data-breach-report-near-record-compromises/" },
-              { value: "53%", label: "of breaches expose customer PII", source: "IBM Cost of a Data Breach Report 2025", href: "https://www.ibm.com/reports/data-breach" },
-              { value: "161%", label: "rise in mail theft (2020–2023)", source: "USPS Postal Inspection Service", href: "https://www.uspis.gov/news/press-releases" },
-              { value: "$47B", label: "annual ID fraud losses (2024)", source: "Javelin / AARP 2025 Identity Fraud Study", href: "https://www.aarp.org/money/scams-fraud/javelin-identity-theft-report-2024/" },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold brand-gradient">{s.value}</div>
-                <div className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed">{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap justify-center gap-x-6 gap-y-1">
-            {[
-              { source: "ITRC 2024 Annual Data Breach Report", href: "https://www.idtheftcenter.org/post/2024-annual-data-breach-report-near-record-compromises/" },
-              { source: "IBM Cost of a Data Breach Report 2025", href: "https://www.ibm.com/reports/data-breach" },
-              { source: "USPS Postal Inspection Service", href: "https://www.uspis.gov/news/press-releases" },
-              { source: "Javelin / AARP 2025 Identity Fraud Study", href: "https://www.aarp.org/money/scams-fraud/javelin-identity-theft-report-2024/" },
-            ].map((r) => (
-              <a key={r.source} href={r.href} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#64748B] hover:text-[#94A3B8] transition-colors underline underline-offset-2">
-                {r.source}
-              </a>
-            ))}
+        <section className="relative -mx-2 rounded-2xl bg-white/70 backdrop-blur-sm border border-[#E2E8F0] p-8 lg:p-10 overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_20px_60px_-30px_rgba(15,23,42,0.12)]">
+          <div aria-hidden className="hero-mesh" />
+          <div className="relative z-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { value: "1.7B+", label: "records compromised in 2024" },
+                { value: "53%", label: "of breaches expose customer PII" },
+                { value: "161%", label: "rise in mail theft (2020–2023)" },
+                { value: "$47B", label: "annual ID fraud losses (2024)" },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <div className="text-2xl lg:text-3xl font-bold brand-gradient">{s.value}</div>
+                  <div className="text-xs text-[#64748B] mt-1.5 leading-relaxed">{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#E2E8F0] flex flex-wrap justify-center gap-x-6 gap-y-1">
+              {[
+                { source: "ITRC 2024 Annual Data Breach Report", href: "https://www.idtheftcenter.org/post/2024-annual-data-breach-report-near-record-compromises/" },
+                { source: "IBM Cost of a Data Breach Report 2025", href: "https://www.ibm.com/reports/data-breach" },
+                { source: "USPS Postal Inspection Service", href: "https://www.uspis.gov/news/press-releases" },
+                { source: "Javelin / AARP 2025 Identity Fraud Study", href: "https://www.aarp.org/money/scams-fraud/javelin-identity-theft-report-2024/" },
+              ].map((r) => (
+                <a key={r.source} href={r.href} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#94A3B8] hover:text-[#0F172A] transition-colors underline underline-offset-2 decoration-[#CBD5E1] hover:decoration-[#0F172A]">
+                  {r.source}
+                </a>
+              ))}
+            </div>
           </div>
         </section>
 

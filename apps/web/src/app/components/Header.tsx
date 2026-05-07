@@ -5,12 +5,12 @@ import { useState } from "react";
 
 function Logo() {
   return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-      <path d="M16 2L4 8v8c0 8.4 5.12 16.24 12 18 6.88-1.76 12-9.6 12-18V8L16 2z" fill="#0F172A" />
-      <path d="M16 4L6 9v7c0 7.36 4.48 14.24 10 15.8V4z" fill="#1E293B" />
-      <path d="M16 4l10 5v7c0 7.36-4.48 14.24-10 15.8V4z" fill="#0F172A" />
-      <circle cx="16" cy="13" r="3" fill="#22D3EE" />
-      <path d="M14 15.5L13 22h6l-1-6.5" fill="#22D3EE" opacity="0.7" />
+    <svg width="28" height="28" viewBox="0 0 1024 1024" fill="none">
+      <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="#F0EFE8" />
+      <rect x="232" y="232" width="560" height="560" rx="80" fill="none" stroke="#1A1A1A" strokeWidth="48" />
+      <circle cx="512" cy="430" r="76" fill="#1A1A1A" />
+      <path d="M472 480L446 668L578 668L552 480Z" fill="#1A1A1A" />
+      <circle cx="512" cy="430" r="28" fill="#E7B300" />
     </svg>
   );
 }
